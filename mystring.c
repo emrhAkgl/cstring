@@ -4,18 +4,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-
-typedef struct string_s {
-	char 			*data;
-	size_t 			size;
-
-	size_t 			(*add_string)(struct string_s *str, const char *_data);
-	size_t			(*add_string_from_terminal)(struct string_s *str);
-	
-	void			(*free_string)(struct string_s *str);
-} string;
-
-
 string *init_string()
 {
 		string *buf = (string*)calloc(1, sizeof(string));
@@ -29,7 +17,7 @@ string *init_string()
 		return buf;
 }
 
-static size_t add_string(string *str, const char *_data)
+size_t add_string(string *str, const char *_data)
 {
 	if(_data == NULL)
 		return 0;
@@ -62,7 +50,7 @@ static size_t add_string(string *str, const char *_data)
 	}
 }
 
-static size_t add_string_from_terminal(string *str)
+size_t add_string_from_terminal(string *str)
 {
 	char *buf = (char *)calloc(2048, sizeof(char));
 	if(buf == NULL)
@@ -110,7 +98,7 @@ static size_t add_string_from_terminal(string *str)
 	}
 }
 
-static void free_string(string *str)
+void free_string(string *str)
 {
 	if(str->data != NULL){
 		free(str->data);
