@@ -10,3 +10,10 @@ void test_init_string()
                 free(test_string);
         }
 }
+
+
+int main(void)
+{
+        test_init_string();
+        
+}
