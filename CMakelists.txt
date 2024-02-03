@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(MyStringExample)
+
+# Kaynak dosyalarını tanımla
+set(SOURCE_FILES
+    mystring.c
+    main.c
+)
+
+# Derleme hedefini tanımla
+add_executable(myprogram ${SOURCE_FILES})
