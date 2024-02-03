@@ -1,13 +1,23 @@
 #ifndef _MYSTRING_H_
 #define _MYSTRING_H_
 
-typedef struct string_s string;
+#include <sys/types.h>
+
+typedef struct string_s {
+	char 			*data;
+	size_t 			size;
+
+	size_t 			(*add_string)(struct string_s *str, const char *_data);
+	size_t			(*add_string_from_terminal)(struct string_s *str);
+	
+	void			(*free_string)(struct string_s *str);
+} string;
 
 string *init_string();
 
-static size_t add_string(string *str, const char *_data);
-static size_t add_string_from_terminal(string *str);
-static void free_string(string *str);
+size_t add_string(string *str, const char *_data);
+size_t add_string_from_terminal(string *str);
+void free_string(string *str);
 
 
 
