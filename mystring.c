@@ -4,17 +4,18 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+
 string *init_string()
 {
-		string *buf = (string*)calloc(1, sizeof(string));
-		if(!buf)
-			return NULL;
+	string *buf = (string*)calloc(1, sizeof(string));
+	if(!buf)
+		return NULL;
+	
+	buf->add_string = &add_string;
+	buf->add_string_from_terminal = &add_string_from_terminal;
+	buf->free_string = &free_string;
 
-		buf->add_string = &add_string;
-		buf->add_string_from_terminal = &add_string_from_terminal;
-		buf->free_string = &free_string;
-		
-		return buf;
+	return buf;
 }
 
 size_t add_string(string *str, const char *_data)
@@ -50,52 +51,41 @@ size_t add_string(string *str, const char *_data)
 	}
 }
 
-size_t add_string_from_terminal(string *str)
-{
-	char *buf = (char *)calloc(2048, sizeof(char));
-	if(buf == NULL)
-		return 0;
-	
-	if(fgets(buf, 2048, stdin) == NULL) {
-		free(buf);
-		return 0;
-	}
+size_t add_string_from_terminal(string *str) {
+	char buf[2048];
+
+	if (fgets(buf, sizeof(buf), stdin) == NULL) {
+        	return 0;
+    	}
+
 	char *new_line = strchr(buf, '\n');
-	if(new_line != NULL)
-		*new_line = '\0';
-	
-	if(str->data == NULL) {
-		str->data = (char *)calloc((strlen(buf) + 1), sizeof(char));
-		if(str->data == NULL) {
-			free(buf);
-			return 0;
-		}
-		
-		size_t i = 0;
-		for(; i < strlen(buf); i++) {
-			str->data[i] = buf[i];
-		}
-		str->data[i] = '\0';
-		
-		str->size = strlen(str->data);
-		return str->size;
-	} else {
-		size_t buf_size = strlen(buf);
-		
-		char *data_buf = (char *)calloc((str->size + buf_size), sizeof(char));
-		if(data_buf == NULL) {
-			free(buf);
-			return 0;
-		}
-		
-		sprintf(data_buf, "%s %s", str->data, buf);
-		free(str->data);
-		
-		str->data = data_buf;
-		str->size = strlen(str->data) + 1;
-		free(buf);
-		return buf_size;
+	if (new_line != NULL) {
+        	*new_line = '\0';
 	}
+
+	size_t buf_size = strlen(buf);
+	
+    	if (str->data == NULL) {
+        	str->data = strdup(buf);
+        	if (str->data == NULL) {
+			return 0;
+		}
+        str->size = buf_size + 1;
+	} else {
+        	char *data_buf = realloc(str->data, str->size + buf_size);
+        	if (data_buf == NULL) {
+            		return 0;
+        	}
+		if (data_buf != str->data) {
+			free(str->data);
+			str->data = data_buf;
+		}
+        
+	        strcat(str->data, buf);
+	        str->size += buf_size;
+    	}
+
+    return buf_size;
 }
 
 void free_string(string *str)
