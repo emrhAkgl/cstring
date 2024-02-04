@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
+project(MyProject)
 
-project(MyStringExample)
+# MyString kütüphanesi
+add_library(MyString mystring.c)
 
-# Kaynak dosyalarını tanımla
-set(SOURCE_FILES
-    mystring.c
-    main.c
-)
+# Ana uygulama
+add_executable(MyApp main.c)
 
-# Derleme hedefini tanımla
-add_executable(myprogram ${SOURCE_FILES})
+# MyApp'in MyString kütüphanesine bağımlılığı
+target_link_libraries(MyApp PRIVATE MyString)
