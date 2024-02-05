@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 
+#define MAX_STRING_SIZE 2048
+
 //This struct is designed to use the string object from other languages in C.
 typedef struct string_s {
 	char 			*data;
