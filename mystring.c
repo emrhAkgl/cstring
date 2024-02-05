@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define TEST 1
 
 string *init_string()
 {
@@ -66,9 +67,14 @@ size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
 	// Bunun için önce 'buf' için hafızadan alan alıp daha sonra bu alana kullanıcıdan
 	// bilgi alacağız. Tabi her şey yolunda giderse :)
 	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str->size),sizeof(char))) == NULL) {
+		if (TEST)
+			fprintf(stderr, "Hata: input_buf %d\n", __LINE__);
 		return 0;
 	}
 	if (fgets(input_buf, (MAX_STRING_SIZE - str->size), stdin) == NULL) {
+		if (TEST)
+			fprintf(stderr, "Hata: fgets %d\n", __LINE__);
+
 		free(input_buf);
 		input_buf = NULL;
         	return 0;
@@ -83,21 +89,36 @@ size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
 	}
 
 	input_buf_size = strlen(input_buf);
+	if (input_buf_size == 0){
+		if (TEST)
+			fprintf(stderr, "Hata: input_buf_size %d\n", __LINE__);
+
+		free(input_buf);
+		input_buf = NULL;
+		return 0;
+	}
 	
 	// Eğer 'data' için ilk değer verilecekse bunu burada yapıyoruz. 
     	if (str->data == NULL) {
+		if (TEST)
+			fprintf(stderr, "Hata: str->data bos %d\n", __LINE__);
+
         	if ((str->data = strdup(input_buf)) == NULL) {
+			if (TEST)
+				fprintf(stderr, "Hata: %d\n", __LINE__);
 			free(input_buf);
 			input_buf = NULL;
 			return 0;
 		} else {
 			free(input_buf);
+			input_buf = NULL;
 			str->size = input_buf_size + 1;
 			return input_buf_size;
 		}
 	} else {
-		/*	???
 		if ((string_data_buf = (char *)calloc((input_buf_size + str->size + 1), sizeof(char))) == NULL) {
+			if (TEST)
+				fprintf(stderr, "Hata: string_data_buf %d\n", __LINE__);
 			free(input_buf);
 			input_buf = NULL;
 			return 0;
@@ -105,29 +126,16 @@ size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
 			strcpy(string_data_buf, str->data);
 			strcat(string_data_buf, " ");
 			strcat(string_data_buf, input_buf);
-			free(str->data);
-			str->data = NULL;
-			
-			if()
-			
-		}
-		*/
-		
-		
-        	string_data_buf = realloc(str->data, str->size + input_buf_size);
-        	if (string_data_buf == NULL) {
-            		return 0;
-        	}
-		if (string_data_buf != str->data) {
-			free(str->data);
-			str->data = string_data_buf;
-		}
-        
-	        strcat(str->data, input_buf);
-	        str->size += input_buf_size;
-    	}
 
-    return input_buf_size;
+
+			free(str->data);
+			free(input_buf);
+
+			str->data = string_data_buf;
+			str->size = strlen(str->data) + 1;
+			return input_buf_size;
+		}
+    	}
 }
 
 void free_string(string *str)
