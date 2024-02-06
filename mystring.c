@@ -12,10 +12,10 @@ string *init_string()
 	if(!buf)
 		return NULL;
 	
-	buf->add_string 		= &add_string;
-	buf->add_string_from_terminal 	= &add_string_from_terminal;
-	buf->print 			= &print_string;
-	buf->free_string 		= &free_string;
+	buf->add_string = &add_string;
+	buf->add_string_from_terminal = &add_string_from_terminal;
+	buf->print = &print_string;
+	buf->free_string = &free_string;
 
 	return buf;
 }
