@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-int TEST = 0;
+extern int TEST;
 
 string *init_string()
 {
