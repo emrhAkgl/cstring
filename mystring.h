@@ -6,14 +6,15 @@
 #define MAX_STRING_SIZE 2048
 
 //This struct is designed to use the string object from other languages in C.
-typedef struct string_s {
+typedef struct string{
 	char 			*data;
 	size_t 			size;
 
-	size_t 			(*add_string)(struct string_s *str, const char *_data);
-	size_t			(*add_string_from_terminal)(struct string_s *str);
+	size_t 			(*add_string)(struct string *str, const char *_data);
+	size_t			(*add_string_from_terminal)(struct string *str);
+	void			(*print)(const struct string *str);
 	
-	void			(*free_string)(struct string_s *str);
+	void			(*free_string)(struct string *str);
 } string;
 
 // To apply the corresponding functions to function pointers in the string_s structure.
@@ -32,6 +33,8 @@ size_t add_string(string *str, const char *_data);
 // in the future and this situation can be solved), each user must give his own message 
 // before the function call. 
 size_t add_string_from_terminal(string *str);
+
+void print_string(const string *str);
 
 // Finally, we release the allocated memory again with functions like "init_string, 
 // add_string, add_string_from_terminal". 
