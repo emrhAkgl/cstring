@@ -12,9 +12,10 @@ string *init_string()
 	if(!buf)
 		return NULL;
 	
-	buf->add_string = &add_string;
-	buf->add_string_from_terminal = &add_string_from_terminal;
-	buf->free_string = &free_string;
+	buf->add_string 		= &add_string;
+	buf->add_string_from_terminal 	= &add_string_from_terminal;
+	buf->print 			= &print_string;
+	buf->free_string 		= &free_string;
 
 	return buf;
 }
@@ -58,8 +59,8 @@ size_t add_string(string *str, const char *_data)
 	}		
 }
 
-size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
-	char *string_data_buf = NULL;
+size_t add_string_from_terminal(string *str)
+{
 	char *input_buf = NULL;
 	size_t input_buf_size = 0;
 	
@@ -72,12 +73,10 @@ size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
 		return 0;
 	}
 	if (fgets(input_buf, (MAX_STRING_SIZE - str->size), stdin) == NULL) {
-		if (TEST)
+		if (TEST) {
 			fprintf(stderr, "Hata: fgets %d\n", __LINE__);
-
-		free(input_buf);
-		input_buf = NULL;
-        	return 0;
+		}
+		goto free_values;
     	}
 
 	//Buraya kadar 'buf için hafızadan alan aldık ve kullanıcıdan buraya giriş yapmasını istedik.
@@ -90,25 +89,18 @@ size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
 
 	input_buf_size = strlen(input_buf);
 	if (input_buf_size == 0){
-		if (TEST)
+		if (TEST) {
 			fprintf(stderr, "Hata: input_buf_size %d\n", __LINE__);
-
-		free(input_buf);
-		input_buf = NULL;
-		return 0;
+		}
+		goto free_values;
 	}
 	
 	// Eğer 'data' için ilk değer verilecekse bunu burada yapıyoruz. 
     	if (str->data == NULL) {
-		if (TEST)
-			fprintf(stderr, "Hata: str->data bos %d\n", __LINE__);
-
         	if ((str->data = strdup(input_buf)) == NULL) {
 			if (TEST)
-				fprintf(stderr, "Hata: %d\n", __LINE__);
-			free(input_buf);
-			input_buf = NULL;
-			return 0;
+				fprintf(stderr, "Hata: strdup basarisiz: satır %d\n", __LINE__ - 2);
+			goto free_values;
 		} else {
 			free(input_buf);
 			input_buf = NULL;
@@ -116,26 +108,27 @@ size_t add_string_from_terminal(string *str) {		// BURASI İLE İLGİLEN!
 			return input_buf_size;
 		}
 	} else {
-		if ((string_data_buf = (char *)calloc((input_buf_size + str->size + 1), sizeof(char))) == NULL) {
-			if (TEST)
-				fprintf(stderr, "Hata: string_data_buf %d\n", __LINE__);
-			free(input_buf);
-			input_buf = NULL;
-			return 0;
-		} else {
-			strcpy(string_data_buf, str->data);
-			strcat(string_data_buf, " ");
-			strcat(string_data_buf, input_buf);
-
-
-			free(str->data);
-			free(input_buf);
-
-			str->data = string_data_buf;
-			str->size = strlen(str->data) + 1;
-			return input_buf_size;
+		char *res = (char *)realloc(str->data, (input_buf_size + str->size + 1));
+		if(res == NULL){
+			goto free_values;
 		}
-    	}
+		if (res != str->data) {
+			str->data = res;
+		}
+		strcat(str->data, " ");
+		strcat(str->data, input_buf);
+		str->size = strlen(str->data) + 1;
+		free(input_buf);
+		input_buf = NULL;
+		return input_buf_size;
+	}
+    	
+free_values:
+	if (input_buf) {
+		free(input_buf);
+		input_buf = NULL;
+	}
+	return 0;
 }
 
 void free_string(string *str)
@@ -147,5 +140,12 @@ void free_string(string *str)
 	if(str != NULL) {
 		free(str);
 		str = NULL;
+	}
+}
+
+void print_string(const string *str)
+{
+	if (str->data){
+		printf("Dada: %s\nSize: %lu\n", str->data, str->size);
 	}
 }
