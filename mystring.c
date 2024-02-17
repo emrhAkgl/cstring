@@ -9,10 +9,7 @@ extern int TEST;
 string *init_string()
 {
 	/*
- 	 * "string" YAPISI İLE OLUŞTURDUĞUMUZ NESNEMİZİN İÇİNDEKİ FONKSİYON 
-   	 * İŞARETÇİLERİNE KULLANACAĞIMIZ FONKSİYONLARIMIZI BURADA ATAMA 
-     	 * YAPIYORUZ. AYRICA GERİYE BELLEKTEN DİNAMİK OLARAK AYIRDIĞIMIZ 
-       	 * "string" İŞARETÇİSİ DÖNÜYORUZ. 
+ 	 * To apply the corresponding functions to function pointers in the string_s structure.
  	 */
 	string *buf = (string*)calloc(1, sizeof(string));
 	if(!buf)	
@@ -28,13 +25,17 @@ string *init_string()
 
 size_t add_string(string *str, const char *_data)
 {
+	/*
+	 * To add a string to the data pointer in the string_s structure. 
+	 * If the pointer is empty it allocates memory, if it is not empty 
+	 * it adds a space at the end of the last word in it and adds the data
+	 * in "_data" to string->data.
+	 */
 	char *str_data_buf = NULL;
 
-	// _data boşsa veya MAX_STRING_SIZE'dan büyükse 0 döndür.
 	if(_data == NULL || (strlen(_data) + str->size) > MAX_STRING_SIZE) 	
 		return 0;
-	
-	// str'ın data üyesi boşsa hafıza tahsisi ile _data'yı üyeye ekle.
+
 	if(str->size == 0) {	
 		if ((str->data = strdup(_data)) == NULL) {
 			return 0;
@@ -66,14 +67,18 @@ size_t add_string(string *str, const char *_data)
 
 size_t add_string_from_terminal(string *str)
 {
+	/*
+	 * It does the same job as the add_string function. The only difference is that 
+	 * instead of giving a value with the _data parameter, we get it from the terminal
+	 * with the user's input. Since it does not request the user to enter a value 
+	 * (each user may want to give a different message, so the function can be edited 
+	 * in the future and this situation can be solved), each user must give his own message 
+	 * before the function call. 
+	 */
+	
 	char *input_buf = NULL;
 	size_t input_buf_size = 0;
 
-	/*
-	 * Kullanıcıdan 'MAX_STRING_SIZE - str->size' kadar giriş alınabilir.  
-	 * Bunun için önce 'buf' için hafızadan alan alıp daha sonra bu alana kullanıcıdan
-	 * bilgi alacağız. Tabi her şey yolunda giderse :)
-	 */
 	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str->size),sizeof(char))) == NULL) {
 		if (TEST)
 			fprintf(stderr, "Hata: input_buf %d\n", __LINE__);
@@ -145,21 +150,25 @@ free_values:
 }
 
 
+void print_string(const string *str)
+{
+	if (str->data){
+		printf("Dada: %s\nSize: %lu\n", str->data, str->size);
+	}
+}
+
 
 void free_string(string *str)
 {
+	/*
+	 * Finally, we release the allocated memory again with functions like "init_string, 
+	 * add_string, add_string_from_terminal". 
+	 */
 	if(str->data != NULL){
 		free(str->data);
 		str->data = NULL;
 		
 		free(str);
 		str = NULL;
-	}
-}
-
-void print_string(const string *str)
-{
-	if (str->data){
-		printf("Dada: %s\nSize: %lu\n", str->data, str->size);
 	}
 }
