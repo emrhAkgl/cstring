@@ -8,8 +8,14 @@ extern int TEST;
 
 string *init_string()
 {
+	/*
+ 	 * "string" YAPISI İLE OLUŞTURDUĞUMUZ NESNEMİZİN İÇİNDEKİ FONKSİYON 
+   	 * İŞARETÇİLERİNE KULLANACAĞIMIZ FONKSİYONLARIMIZI BURADA ATAMA 
+     	 * YAPIYORUZ. AYRICA GERİYE BELLEKTEN DİNAMİK OLARAK AYIRDIĞIMIZ 
+       	 * "string" İŞARETÇİSİ DÖNÜYORUZ. 
+ 	 */
 	string *buf = (string*)calloc(1, sizeof(string));
-	if(!buf)
+	if(!buf)	
 		return NULL;
 	
 	buf->add_string = &add_string;
@@ -45,8 +51,7 @@ size_t add_string(string *str, const char *_data)
 		free(str->data);
 		str->data = NULL;
 		
-		str->data = (char *)calloc(((strlen(str_data_buf) + strlen(_data)) + 1), sizeof(char));
-		if(str->data == NULL) {
+		if ((str->data = (char *)calloc(((strlen(str_data_buf) + strlen(_data)) + 1), sizeof(char))) == NULL) {
 			free(str_data_buf);
 			return 0;
 		} else {
@@ -54,7 +59,7 @@ size_t add_string(string *str, const char *_data)
 			str->size = strlen(str->data) + 1;
 			free(str_data_buf);
 			str_data_buf = NULL;
-			return (size_t)(strlen(str->data) + 1);
+			return (strlen(str->data) + 1);
 		}
 	}		
 }
@@ -63,10 +68,12 @@ size_t add_string_from_terminal(string *str)
 {
 	char *input_buf = NULL;
 	size_t input_buf_size = 0;
-	
-	// Kullanıcıdan 'MAX_STRING_SIZE - str->size' kadar giriş alınabilir.  
-	// Bunun için önce 'buf' için hafızadan alan alıp daha sonra bu alana kullanıcıdan
-	// bilgi alacağız. Tabi her şey yolunda giderse :)
+
+	/*
+	 * Kullanıcıdan 'MAX_STRING_SIZE - str->size' kadar giriş alınabilir.  
+	 * Bunun için önce 'buf' için hafızadan alan alıp daha sonra bu alana kullanıcıdan
+	 * bilgi alacağız. Tabi her şey yolunda giderse :)
+	 */
 	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str->size),sizeof(char))) == NULL) {
 		if (TEST)
 			fprintf(stderr, "Hata: input_buf %d\n", __LINE__);
@@ -79,9 +86,11 @@ size_t add_string_from_terminal(string *str)
 		goto free_values;
     	}
 
-	//Buraya kadar 'buf için hafızadan alan aldık ve kullanıcıdan buraya giriş yapmasını istedik.
-	// fgets giriş sırasında \n karakterini de değişkene aktarıyor, biz de bunu istemiyoruz.
-	// O yüzden \n karakterini bulup onu NULL ile değiştirelim. 
+	/*
+	 *Buraya kadar 'buf için hafızadan alan aldık ve kullanıcıdan buraya giriş yapmasını istedik.
+	 * fgets giriş sırasında \n karakterini de değişkene aktarıyor, biz de bunu istemiyoruz.
+	 * O yüzden \n karakterini bulup onu NULL ile değiştirelim. 
+	 */
 	char *new_line = strchr(input_buf, '\n');
 	if (new_line != NULL) {
         	*new_line = '\0';
@@ -98,8 +107,9 @@ size_t add_string_from_terminal(string *str)
 	// Eğer 'data' için ilk değer verilecekse bunu burada yapıyoruz. 
     	if (str->data == NULL) {
         	if ((str->data = strdup(input_buf)) == NULL) {
-			if (TEST)
+			if (TEST) {
 				fprintf(stderr, "Hata: strdup basarisiz: satır %d\n", __LINE__ - 2);
+			}
 			goto free_values;
 		} else {
 			free(input_buf);
@@ -113,8 +123,11 @@ size_t add_string_from_terminal(string *str)
 			goto free_values;
 		}
 		if (res != str->data) {
+			free(str->data);
+			str->data = NULL;
 			str->data = res;
 		}
+		
 		strcat(str->data, " ");
 		strcat(str->data, input_buf);
 		str->size = strlen(str->data) + 1;
@@ -131,13 +144,14 @@ free_values:
 	return 0;
 }
 
+
+
 void free_string(string *str)
 {
 	if(str->data != NULL){
 		free(str->data);
 		str->data = NULL;
-	}
-	if(str != NULL) {
+		
 		free(str);
 		str = NULL;
 	}
