@@ -10,7 +10,7 @@ You can download the library directly from
 "https://github.com/emrhAkgl/cstring"
 ```
 or you can use the 
-```bash
+```
 "git clone https://github.com/emrhAkgl/cstring"
 ```
 
