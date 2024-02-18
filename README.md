@@ -1,6 +1,6 @@
 # xstring
 
-The c_string library was written in C for a string approach similar to that in C++, but much less professional. 
+The xstring library was written in C for a string approach similar to that in C++, but much less professional. 
 Note that this is a personal project. 
 
 ## Installation
