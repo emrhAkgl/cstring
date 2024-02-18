@@ -1,4 +1,4 @@
-#include "mystring.h"
+#include "c_string.h"
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
