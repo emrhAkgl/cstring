@@ -1,5 +1,5 @@
-#ifndef _MYSTRING_H_
-#define _MYSTRING_H_
+#ifndef _C_STRING_H_
+#define _C_STRING_H_
 
 #include <sys/types.h>
 
