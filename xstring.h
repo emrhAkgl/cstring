@@ -1,5 +1,5 @@
-#ifndef _C_STRING_H_
-#define _C_STRING_H_
+#ifndef _XSTRING_H_
+#define _XSTRING_H_
 
 #include <sys/types.h>
 
