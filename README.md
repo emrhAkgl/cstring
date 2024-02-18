@@ -1,4 +1,4 @@
-# c_string
+# xstring
 
 The c_string library was written in C for a string approach similar to that in C++, but much less professional. 
 Note that this is a personal project. 
@@ -7,18 +7,18 @@ Note that this is a personal project.
 
 You can download the library directly from 
 ```
-https://github.com/emrhAkgl/cstring
+https://github.com/emrhAkgl/xstring
 ```
 or you can use the 
 ```bash
-git clone https://github.com/emrhAkgl/cstring
+git clone https://github.com/emrhAkgl/xstring
 ```
 
 
 ## Usage
 
 ```c
-#include "c_string.h"
+#include "xstring.h"
 
 int main(int argc, char **argv)
 {
