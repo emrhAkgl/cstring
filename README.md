@@ -7,11 +7,11 @@ Note that this is a personal project.
 
 You can download the library directly from 
 ```
-"https://github.com/emrhAkgl/cstring"
+https://github.com/emrhAkgl/cstring
 ```
 or you can use the 
-```
-"git clone https://github.com/emrhAkgl/cstring"
+```bash
+git clone https://github.com/emrhAkgl/cstring
 ```
 
 
