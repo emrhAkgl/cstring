@@ -1,10 +1,10 @@
-#include "c_string.h"
+#include "xstring.h"
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
 
-extern int TEST;
+#define TEST 0;
 
 string *init_string()
 {
