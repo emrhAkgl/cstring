@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 {
 	string *names = init_string();	
 	char *name = "Emrah Akgul";
-	char *name2 = "Serdar Aksu";
+	char *name2 = "Vladislav Polyanskiy";
 
 	names->add_string(names, name);
 	names->add_string(names, name2);
