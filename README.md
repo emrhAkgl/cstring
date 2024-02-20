@@ -19,23 +19,40 @@ git clone https://github.com/emrhAkgl/xstring
 
 ```c
 #include "xstring.h"
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
-	string *names = init_string();	
-	char *name = "Emrah Akgul";
-	char *name2 = "Vladislav Polyanskiy";
+	char *str1 = "Hello";
+	char *str2 = "World!";
+	char *str3 = "what's up?";
+	char *answ = "Good :)";
 
-	names->add(names, name);
-	names->add(names, name2);
+	string *hi = init_string();
+	if (!hi) {	
+		fprintf(stderr, "init_string returned NULL");
+		return 1;
+	}
 
-	names->print(names);
+	hi->add(hi, str1); 
+	hi->add(hi, str2); 
+	hi->add(hi, str3); 
 
-	names->free(names);
+	hi->print(hi); /* Hello World! What's up? */
 
+	hi->clear(hi);
+
+	(*hi).add(hi, answ);
+
+	const char *data = hi->get_data(hi);
+
+	/* Good :) */
+	/* hi size: 8 */
+	printf("\n%s\nhi size: %lu\n", data, hi->get_size(hi));
+
+	hi->free(hi);
 	return 0;
-}
-```
+}```
 
 ## Contributing
 
