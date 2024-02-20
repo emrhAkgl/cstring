@@ -47,8 +47,11 @@ int main(int argc, char **argv)
 	const char *data = hi->get_data(hi);
 
 	/* Good :) */
-	/* hi size: 8 */
+	/* hi size: 7 */
 	printf("\n%s\nhi size: %lu\n", data, hi->get_size(hi));
+	/*					|		*/
+	/*					V		*/
+	/*				strlen(hi->data)	*/
 
 	hi->free(hi);
 	return 0;
