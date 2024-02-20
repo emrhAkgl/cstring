@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#define TEST 0
+#define TEST 1
 
 string *init_string()
 {
@@ -65,7 +65,7 @@ size_t add_string(string *str, const char *_data)
 	}		
 }
 
-size_t add_string_from_terminal(string *str)
+int add_string_from_terminal(string *str)
 {
 	/*
 	 * It does the same job as the add_string function. The only difference is that 
@@ -73,7 +73,8 @@ size_t add_string_from_terminal(string *str)
 	 * with the user's input. Since it does not request the user to enter a value 
 	 * (each user may want to give a different message, so the function can be edited 
 	 * in the future and this situation can be solved), each user must give his own message 
-	 * before the function call. 
+	 * before the function call. If the function succeeds, it returns 0, if it fails,
+	 * it returns a negative value.
 	 */
 	
 	char *input_buf = NULL;
@@ -82,14 +83,24 @@ size_t add_string_from_terminal(string *str)
 	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str->size),sizeof(char))) == NULL) {
 		if (TEST)
 			fprintf(stderr, "Hata: input_buf %d\n", __LINE__);
-		return 0;
+		return -1;
 	}
 	if (fgets(input_buf, (MAX_STRING_SIZE - str->size), stdin) == NULL) {
 		if (TEST) {
 			fprintf(stderr, "Hata: fgets %d\n", __LINE__);
 		}
-		goto free_values;
+		free(input_buf);
+		input_buf = NULL;
+		return -1;
     	}
+	if (strlen(input_buf) == 1) {
+		free(input_buf);
+		input_buf = NULL;
+		return 0;
+	} else {
+		/* "-1" because the '\n' character has not yet been deleted.*/
+		input_buf_size = strlen(input_buf) - 1; 
+	}
 
 	/*
 	 *Buraya kadar 'buf için hafızadan alan aldık ve kullanıcıdan buraya giriş yapmasını istedik.
@@ -101,52 +112,13 @@ size_t add_string_from_terminal(string *str)
         	*new_line = '\0';
 	}
 
-	input_buf_size = strlen(input_buf);
-	if (input_buf_size == 0){
-		if (TEST) {
-			fprintf(stderr, "Hata: input_buf_size %d\n", __LINE__);
-		}
-		goto free_values;
-	}
-	
-	// Eğer 'data' için ilk değer verilecekse bunu burada yapıyoruz. 
-    	if (str->data == NULL) {
-        	if ((str->data = strdup(input_buf)) == NULL) {
-			if (TEST) {
-				fprintf(stderr, "Hata: strdup basarisiz: satır %d\n", __LINE__ - 2);
-			}
-			goto free_values;
-		} else {
-			free(input_buf);
-			input_buf = NULL;
-			str->size = input_buf_size + 1;
-			return input_buf_size;
-		}
-	} else {
-		char *res = (char *)realloc(str->data, (input_buf_size + str->size + 1));
-		if(res == NULL){
-			goto free_values;
-		}
-		if (res != str->data) {
-			free(str->data);
-			str->data = NULL;
-			str->data = res;
-		}
-		
-		strcat(str->data, " ");
-		strcat(str->data, input_buf);
-		str->size = strlen(str->data) + 1;
-		free(input_buf);
-		input_buf = NULL;
-		return input_buf_size;
-	}
-    	
-free_values:
-	if (input_buf) {
-		free(input_buf);
-		input_buf = NULL;
-	}
-	return 0;
+	int res = add_string(str, input_buf);
+	free(input_buf);
+	input_buf = NULL;
+	if (res > 0)
+		return 1;
+	else 
+		return 0;
 }
 
 
@@ -164,10 +136,13 @@ void free_string(string *str)
 	 * Finally, we release the allocated memory again with functions like "init_string, 
 	 * add_string, add_string_from_terminal". 
 	 */
-	if(str->data != NULL){
-		free(str->data);
-		str->data = NULL;
-		
+	if (str != NULL) {
+
+		if(str->data != NULL){
+			free(str->data);
+			str->data = NULL;
+		}
+
 		free(str);
 		str = NULL;
 	}
