@@ -1,7 +1,7 @@
 # xstring
 
 The xstring library was written in C for a string approach similar to that in C++, but much less professional. 
-Note that this is a personal project. 
+Note that this is a personal project. The project file consists of a single .h file and is written on Linux. 
 
 ## Installation
 
