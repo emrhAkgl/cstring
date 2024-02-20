@@ -9,10 +9,10 @@ typedef struct string{
 	char 		*data;
 	size_t 		size;
 
-	size_t 		(*add_string)(struct string *str, const char *_data);
-	int		(*add_string_from_terminal)(struct string *str);
+	size_t 		(*add)(struct string *str, const char *_data);
+	int		(*add_from_terminal)(struct string *str);
 	void		(*print)(const struct string *str);
-	void		(*free_string)(struct string *str);
+	void		(*free)(struct string *str);
 } string;
 
 string *init_string();
