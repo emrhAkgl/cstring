@@ -1,19 +1,18 @@
-#ifndef _XSTRING_H_DEFINE_
-#define _XSTRING_H_DEFINE_
+#ifndef _XSTRING_H_
+#define _XSTRING_H_
 
-#include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
 
-#define TEST 1
 
-#define MAX_STRING_SIZE 2048
-
+/************************************************************************************************************************/
+/************************************************************************************************************************/
+/*							XSTRING.H							*/
+#include <sys/types.h>
 typedef struct string{
 	char 		*data;
-	size_t 		size;
 
 	size_t 		(*add)			(struct string *str, const char *_data);
 	int		(*add_from_terminal)	(struct string *str);
@@ -35,7 +34,11 @@ int		pop_back_string(string *str);
 size_t		get_string_size(const string *str);
 const char 	*get_string_data(const string *str);
 void		clear_string(string *str);
+/************************************************************************************************************************/
+/************************************************************************************************************************/
 
+#define TEST 1
+#define MAX_STRING_SIZE 2048
 
 
 string *init_string()
@@ -59,6 +62,8 @@ string *init_string()
 	return buf;
 }
 
+
+
 size_t add_string(string *str, const char *_data)
 {
 	/*
@@ -68,16 +73,19 @@ size_t add_string(string *str, const char *_data)
 	 * in "_data" to string->data.
 	 */
 	char *str_data_buf = NULL;
+	size_t str_size = 0;
+	if (str->data != NULL) {
+		str_size = strlen(str->data);
+	}
 
-	if(_data == NULL || (strlen(_data) + str->size) > MAX_STRING_SIZE) 	
+	if(_data == NULL || (strlen(_data) + str_size) > MAX_STRING_SIZE) 	
 		return 0;
 
-	if(str->size == 0) {	
+	if(str_size == 0) {	
 		if ((str->data = strdup(_data)) == NULL) {
 			return 0;
 		} else {
-			str->size = strlen(str->data)+1;
-			return str->size;
+			return strlen(str->data);
 		}
 	}
 	
@@ -93,13 +101,14 @@ size_t add_string(string *str, const char *_data)
 			return 0;
 		} else {
 			sprintf(str->data, "%s %s", str_data_buf, _data);
-			str->size = strlen(str->data) + 1;
 			free(str_data_buf);
 			str_data_buf = NULL;
 			return (strlen(str->data) + 1);
 		}
 	}		
 }
+
+
 
 int add_string_from_terminal(string *str)
 {
@@ -115,13 +124,18 @@ int add_string_from_terminal(string *str)
 	
 	char *input_buf = NULL;
 	size_t input_buf_size = 0;
+	size_t str_size = 0;
 
-	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str->size),sizeof(char))) == NULL) {
+	if (str->data != NULL) {
+		str_size = strlen(str->data);
+	}
+
+	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str_size),sizeof(char))) == NULL) {
 		if (TEST)
 			fprintf(stderr, "Hata: input_buf %d\n", __LINE__);
 		return -1;
 	}
-	if (fgets(input_buf, (MAX_STRING_SIZE - str->size), stdin) == NULL) {
+	if (fgets(input_buf, (MAX_STRING_SIZE - str_size), stdin) == NULL) {
 		if (TEST) {
 			fprintf(stderr, "Hata: fgets %d\n", __LINE__);
 		}
@@ -157,9 +171,16 @@ int add_string_from_terminal(string *str)
 		return 0;
 }
 
+
+
 int pop_back_string(string *str)
 {
-	if (str->size == 0) 
+	size_t str_size = 0;
+	if (str->data != NULL) {
+		str_size = strlen(str->data);
+	}
+
+	if (str_size == 0) 
 		return -1;
 
 	char *ptr = str->data;
@@ -174,7 +195,6 @@ int pop_back_string(string *str)
 				memmove(buf, ptr, j);
 				free(str->data);
 				str->data = buf;
-				str->size = strlen(str->data) + 1;
 				return 0;
 			}
 			
@@ -185,6 +205,7 @@ int pop_back_string(string *str)
 }
 
 
+
 void print_string(const string *str)
 {
 	if (str->data){
@@ -193,15 +214,21 @@ void print_string(const string *str)
 	}
 }
 
+
+
 size_t	get_string_size(const string *str)
 {
-	return str->size;
+	return strlen(str->data);
 }
+
+
 
 const char 	*get_string_data(const string *str)
 {
 	return str->data;
 }
+
+
 
 void clear_string(string *str)
 {
@@ -210,8 +237,9 @@ void clear_string(string *str)
 
 	free(str->data);
 	str->data = NULL;
-	str->size = 0;
 }
+
+
 
 void free_string(string *str)
 {
