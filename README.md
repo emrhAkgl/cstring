@@ -26,12 +26,12 @@ int main(int argc, char **argv)
 	char *name = "Emrah Akgul";
 	char *name2 = "Vladislav Polyanskiy";
 
-	names->add_string(names, name);
-	names->add_string(names, name2);
+	names->add(names, name);
+	names->add(names, name2);
 
 	names->print(names);
 
-	names->free_string(names);
+	names->free(names);
 
 	return 0;
 }
