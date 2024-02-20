@@ -15,10 +15,14 @@ string *init_string()
 	if(!buf)	
 		return NULL;
 	
-	buf->add = &add_string;
-	buf->add_from_terminal = &add_string_from_terminal;
-	buf->print = &print_string;
-	buf->free = &free_string;
+	buf->add 		= &add_string;
+	buf->add_from_terminal 	= &add_string_from_terminal;
+	buf->print 		= &print_string;
+	buf->free 		= &free_string;
+	buf->pop_back 		= &pop_back_string;
+	buf->get_size 		= &get_string_size;
+	buf->get_data 		= &get_string_data;
+	buf->clear 		= &clear_string;
 
 	return buf;
 }
@@ -121,14 +125,61 @@ int add_string_from_terminal(string *str)
 		return 0;
 }
 
+int pop_back_string(string *str)
+{
+	if (str->size == 0) 
+		return -1;
+
+	char *ptr = str->data;
+	size_t size = strlen(str->data);
+	for(int i = size -1; i >= 0; i--) {
+		if (ptr[i] == ' ') {
+			int j = i;
+			char *buf = (char *)malloc((j + 1) * sizeof(char));
+			if (!buf) {
+				return -1;
+			} else {
+				memmove(buf, ptr, j);
+				free(str->data);
+				str->data = buf;
+				str->size = strlen(str->data) + 1;
+				return 0;
+			}
+			
+		}
+	}
+
+	return 0;
+}
+
 
 void print_string(const string *str)
 {
 	if (str->data){
-		printf("Dada: %s\nSize: %lu\n", str->data, str->size);
+		printf("%s", str->data);
+		fflush(stdout);
 	}
 }
 
+size_t	get_string_size(const string *str)
+{
+	return str->size;
+}
+
+const char 	*get_string_data(const string *str)
+{
+	return str->data;
+}
+
+void clear_string(string *str)
+{
+	if (str->data == NULL)
+		return;
+
+	free(str->data);
+	str->data = NULL;
+	str->size = 0;
+}
 
 void free_string(string *str)
 {
