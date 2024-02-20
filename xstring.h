@@ -35,7 +35,7 @@ size_t		get_string_size(const string *str);
 const char 	*get_string_data(const string *str);
 void		clear_string(string *str);
 
-char *xstrdup(const char *s);
+char		*xstrdup(const char *s);
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 
@@ -84,7 +84,7 @@ size_t add_string(string *str, const char *_data)
 		return 0;
 
 	if(str_size == 0) {	
-		if ((str->data = strdup(_data)) == NULL) {
+		if ((str->data = xstrdup(_data)) == NULL) {
 			return 0;
 		} else {
 			return strlen(str->data);
@@ -92,7 +92,7 @@ size_t add_string(string *str, const char *_data)
 	}
 	
 	//'str->data' doluysa sonuna bir boşlukla beraber '_data' yı ekle.
-	if((str_data_buf = strdup(str->data)) == NULL) {
+	if((str_data_buf = xstrdup(str->data)) == NULL) {
 		return 0;
 	} else {
 		free(str->data);
@@ -256,6 +256,7 @@ void free_string(string *str)
 		str = NULL;
 	}
 }
+
 
 char *xstrdup(const char *s)
 {
