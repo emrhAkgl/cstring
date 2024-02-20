@@ -34,6 +34,8 @@ int		pop_back_string(string *str);
 size_t		get_string_size(const string *str);
 const char 	*get_string_data(const string *str);
 void		clear_string(string *str);
+
+char *xstrdup(const char *s);
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 
@@ -253,6 +255,18 @@ void free_string(string *str)
 		free(str);
 		str = NULL;
 	}
+}
+
+char *xstrdup(const char *s)
+{
+	size_t len = strlen(s) + 1;
+	char *buf = (char *)malloc(len);
+	if (!buf) {
+		return 0;
+	}
+
+	strcpy(buf, s);
+	return buf;
 }
 
 #endif
