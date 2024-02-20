@@ -55,7 +55,46 @@ int main(int argc, char **argv)
 
 	hi->free(hi);
 	return 0;
-}```
+}
+```
+
+## Build On GNU/Linux
+Copy your xstring.h file, preferably to the same directory as your main.c file. Create a file named "CMakeLists.txt":
+```bash
+touch CMakeLists.txt
+```
+
+And edit your file as follows
+```cmake
+cmake_minimum_required(VERSION 3.10)
+
+project(example_project)
+
+add_compile_options(-Wall -Wextra -std=c11)
+
+add_executable(example main.c)
+
+target_include_directories(example PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+```
+
+Then create a folder called "build" to compile our file and go inside the folder:
+```bash
+mkdir build
+cd build
+```
+
+You can compile your files as follows: 
+```bash
+cmake ..
+make
+```
+
+If you do not receive any error, your file is ready to run:
+```bash
+./example
+```
+
+That's all :)
 
 ## Contributing
 
