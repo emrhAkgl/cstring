@@ -123,7 +123,6 @@ int add_string_from_terminal(string *str)
 	 */
 	
 	char *input_buf = NULL;
-	size_t input_buf_size = 0;
 	size_t str_size = 0;
 
 	if (str->data != NULL) {
@@ -147,9 +146,6 @@ int add_string_from_terminal(string *str)
 		free(input_buf);
 		input_buf = NULL;
 		return 0;
-	} else {
-		/* "-1" because the '\n' character has not yet been deleted.*/
-		input_buf_size = strlen(input_buf) - 1; 
 	}
 
 	/*
