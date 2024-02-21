@@ -36,6 +36,10 @@ const char 	*get_string_data(const string *str);
 void		clear_string(string *str);
 
 char		*xstrdup(const char *s);
+
+/* Henüz yapmadıklarım*/
+int erase_word(string *str);
+int swap_word(string *str);
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 
