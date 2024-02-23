@@ -55,14 +55,14 @@ string *init_string()
 	if(!tmp)	
 		return NULL;
 	
-	tmp->add 		= &add_string;
-	tmp->add_from_terminal 	= &add_string_from_terminal;
-	tmp->print 		= &print_string;
-	tmp->free 		= &free_string;
-	tmp->pop_back 		= &pop_back_string;
-	tmp->get_size 		= &get_string_size;
-	tmp->get_data 		= &get_string_data;
-	tmp->clear 		= &clear_string;
+	tmp->add = &add_string;
+	tmp->add_from_terminal = &add_string_from_terminal;
+	tmp->print = &print_string;
+	tmp->free = &free_string;
+	tmp->pop_back = &pop_back_string;
+	tmp->get_size = &get_string_size;
+	tmp->get_data = &get_string_data;
+	tmp->clear = &clear_string;
 
 	return tmp;
 }
