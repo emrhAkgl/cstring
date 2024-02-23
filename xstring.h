@@ -14,14 +14,14 @@
 typedef struct string{
 	char 		*data;
 
-	size_t 		(*add)			(struct string *self, const char *_data);
-	int		(*add_from_terminal)	(struct string *self);
-	void		(*print)		(const struct string *self);
-	void		(*free)			(struct string *self);
-	int 		(*pop_back)		(struct string *self);
-	size_t		(*get_size)		(const struct string *self);
-	const char*	(*get_data)		(const struct string *self);
-	void		(*clear)		(struct string *self);
+	size_t (*add)(struct string *self, const char *_data);
+	int (*add_from_terminal)(struct string *self);
+	void (*print)(const struct string *self);
+	void (*free)(struct string *self);
+	int (*pop_back)(struct string *self);
+	size_t (*get_size)(const struct string *self);
+	const char*	(*get_data)(const struct string *self);
+	void (*clear)(struct string *self);
 } string;
 
 /* FUNCTIONS */
