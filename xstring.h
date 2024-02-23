@@ -1,10 +1,10 @@
 #ifndef _XSTRING_H_
 #define _XSTRING_H_
 
-#include <stdio.h>
-#include <string.h>
+#include <stdio.h>	/* printf */
+#include <string.h>	/* strlen, strcpy ... */
 #include <stddef.h>
-#include <stdlib.h>
+#include <stdlib.h>	/* malloc, calloc ...*/
 
 
 /************************************************************************************************************************/
