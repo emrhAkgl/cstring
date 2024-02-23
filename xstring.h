@@ -172,18 +172,18 @@ int add_string_from_terminal(string *str)
 
 
 
-int pop_back_string(string *str)
+int pop_back_string(string *self)
 {
 	size_t str_size = 0;
-	if (str->data != NULL) {
-		str_size = strlen(str->data);
+	if (self->data != NULL) {
+		str_size = strlen(self->data);
 	}
 
 	if (str_size == 0) 
 		return -1;
 
-	char *ptr = str->data;
-	size_t size = strlen(str->data);
+	char *ptr = self->data;
+	size_t size = strlen(self->data);
 	for(int i = size -1; i >= 0; i--) {
 		if (ptr[i] == ' ') {
 			int j = i;
@@ -192,8 +192,8 @@ int pop_back_string(string *str)
 				return -1;
 			} else {
 				memmove(buf, ptr, j);
-				free(str->data);
-				str->data = buf;
+				free(self->data);
+				self->data = buf;
 				return 0;
 			}
 			
@@ -205,39 +205,39 @@ int pop_back_string(string *str)
 
 
 
-void print_string(const string *str)
+void print_string(const string *self)
 {
-	if (str->data){
-		printf("%s", str->data);
+	if (self->data){
+		printf("%s", self->data);
 		fflush(stdout);
 	}
 }
 
 
 
-size_t	get_string_size(const string *str)
+size_t	get_string_size(const string *self)
 {
-	return strlen(str->data);
+	return strlen(self->data);
 }
 
 
 
-const char 	*get_string_data(const string *str)
+const char 	*get_string_data(const string *self)
 {
-	return str->data;
+	return self->data;
 }
 
 
 /*
- * 
+ * It only releases @self->data. It does not delete @self;
  */
-void clear_string(string *str)
+void clear_string(string *self)
 {
-	if (str->data == NULL)
+	if (self->data == NULL)
 		return;
 
-	free(str->data);
-	str->data = NULL;
+	free(self->data);
+	self->data = NULL;
 }
 
 
@@ -274,7 +274,6 @@ char *xstrdup(const char *str)
 	}
 	
 	while ((*tmp_ptr++ = *str++) != '\0');
-	*tmp_ptr = '\0';
 	
 	return tmp;
 }
