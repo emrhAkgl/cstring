@@ -25,17 +25,17 @@ typedef struct string{
 } string;
 
 /* FUNCTIONS */
-string		*init_string(void);
-size_t		add_string(string *self, const char *_data);
-int		add_string_from_terminal(string *self);
-void		print_string(const string *self);
-void		free_string(string *self);
-int		pop_back_string(string *self);
-size_t		get_string_size(const string *self);
-const char 	*get_string_data(const string *self);
-void		clear_string(string *self);
+string	*init_string(void);
+size_t	add_string(string *self, const char *_data);
+int	add_string_from_terminal(string *self);
+void	print_string(const string *self);
+void	free_string(string *self);
+int	pop_back_string(string *self);
+size_t	get_string_size(const string *self);
+const char *get_string_data(const string *self);
+void clear_string(string *self);
 
-char		*xstrdup(const char *s);
+char *xstrdup(const char *s);
 
 /* Henüz yapmadıklarım*/
 int erase_word(string *str, const char *word);
