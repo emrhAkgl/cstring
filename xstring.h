@@ -16,12 +16,12 @@ typedef struct string{
 
 	size_t 		(*add)			(struct string *str, const char *_data);
 	int		(*add_from_terminal)	(struct string *str);
-	void		(*print)			(const struct string *str);
+	void		(*print)		(const struct string *str);
 	void		(*free)			(struct string *str);
-	int 		(*pop_back)			(struct string *str);
-	size_t		(*get_size)			(const struct string *str);
-	const char*	(*get_data)			(const struct string *str);
-	void		(*clear)			(struct string *str);
+	int 		(*pop_back)		(struct string *str);
+	size_t		(*get_size)		(const struct string *str);
+	const char*	(*get_data)		(const struct string *str);
+	void		(*clear)		(struct string *str);
 } string;
 
 /* FUNCTIONS */
@@ -69,15 +69,14 @@ string *init_string()
 }
 
 
-
+/*
+ * To add a string to the data pointer in the string_s structure. 
+ * If the pointer is empty it allocates memory, if it is not empty 
+ * it adds a space at the end of the last word in it and adds the data
+ * in "_data" to string->data.
+ */
 size_t add_string(string *str, const char *_data)
 {
-	/*
-	 * To add a string to the data pointer in the string_s structure. 
-	 * If the pointer is empty it allocates memory, if it is not empty 
-	 * it adds a space at the end of the last word in it and adds the data
-	 * in "_data" to string->data.
-	 */
 	char *str_data_buf = NULL;
 	size_t str_size = 0;
 	if (str->data != NULL) {
@@ -115,19 +114,17 @@ size_t add_string(string *str, const char *_data)
 }
 
 
-
+/*
+ * It does the same job as the add_string function. The only difference is that 
+ * instead of giving a value with the _data parameter, we get it from the terminal
+ * with the user's input. Since it does not request the user to enter a value 
+ * (each user may want to give a different message, so the function can be edited 
+ * in the future and this situation can be solved), each user must give his own message 
+ * before the function call. If the function succeeds, it returns 0, if it fails,
+ * it returns a negative value.
+ */
 int add_string_from_terminal(string *str)
-{
-	/*
-	 * It does the same job as the add_string function. The only difference is that 
-	 * instead of giving a value with the _data parameter, we get it from the terminal
-	 * with the user's input. Since it does not request the user to enter a value 
-	 * (each user may want to give a different message, so the function can be edited 
-	 * in the future and this situation can be solved), each user must give his own message 
-	 * before the function call. If the function succeeds, it returns 0, if it fails,
-	 * it returns a negative value.
-	 */
-	
+{	
 	char *input_buf = NULL;
 	size_t str_size = 0;
 
@@ -231,7 +228,9 @@ const char 	*get_string_data(const string *str)
 }
 
 
-
+/*
+ * 
+ */
 void clear_string(string *str)
 {
 	if (str->data == NULL)
@@ -242,13 +241,11 @@ void clear_string(string *str)
 }
 
 
-
+/*
+ * It releases @str.
+ */
 void free_string(string *str)
 {
-	/*
-	 * Finally, we release the allocated memory again with functions like "init_string, 
-	 * add_string, add_string_from_terminal". 
-	 */
 	if (str != NULL) {
 
 		if(str->data != NULL){
@@ -261,17 +258,25 @@ void free_string(string *str)
 	}
 }
 
-
-char *xstrdup(const char *s)
+/*
+ * Copies @str to a dynamically allocated memory and returns it. 
+ * @str: Value to be copied to dynamic memory. 
+ */
+char *xstrdup(const char *str)
 {
-	size_t len = strlen(s) + 1;
-	char *buf = (char *)malloc(len);
-	if (!buf) {
-		return 0;
+	size_t len = strlen(str) + 1;
+	char *tmp = (char *)malloc(len);
+	char *tmp_ptr = tmp;
+	
+	if (!tmp_ptr) {
+	    fprintf(stderr, "tmp maloc err, line: %d\n", __LINE__);
+		return NULL;
 	}
-
-	strcpy(buf, s);
-	return buf;
+	
+	while ((*tmp_ptr++ = *str++) != '\0');
+	*tmp_ptr = '\0';
+	
+	return tmp;
 }
 
 #endif
