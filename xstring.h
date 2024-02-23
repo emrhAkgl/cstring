@@ -14,58 +14,57 @@
 typedef struct string{
 	char 		*data;
 
-	size_t 		(*add)			(struct string *str, const char *_data);
-	int		(*add_from_terminal)	(struct string *str);
-	void		(*print)		(const struct string *str);
-	void		(*free)			(struct string *str);
-	int 		(*pop_back)		(struct string *str);
-	size_t		(*get_size)		(const struct string *str);
-	const char*	(*get_data)		(const struct string *str);
-	void		(*clear)		(struct string *str);
+	size_t 		(*add)			(struct string *self, const char *_data);
+	int		(*add_from_terminal)	(struct string *self);
+	void		(*print)		(const struct string *self);
+	void		(*free)			(struct string *self);
+	int 		(*pop_back)		(struct string *self);
+	size_t		(*get_size)		(const struct string *self);
+	const char*	(*get_data)		(const struct string *self);
+	void		(*clear)		(struct string *self);
 } string;
 
 /* FUNCTIONS */
 string		*init_string(void);
-size_t		add_string(string *str, const char *_data);
-int		add_string_from_terminal(string *str);
-void		print_string(const string *str);
-void		free_string(string *str);
-int		pop_back_string(string *str);
-size_t		get_string_size(const string *str);
-const char 	*get_string_data(const string *str);
-void		clear_string(string *str);
+size_t		add_string(string *self, const char *_data);
+int		add_string_from_terminal(string *self);
+void		print_string(const string *self);
+void		free_string(string *self);
+int		pop_back_string(string *self);
+size_t		get_string_size(const string *self);
+const char 	*get_string_data(const string *self);
+void		clear_string(string *self);
 
 char		*xstrdup(const char *s);
 
 /* Henüz yapmadıklarım*/
-int erase_word(string *str);
-int swap_word(string *str);
+int erase_word(string *str, const char *word);
+int swap_word(string *str, char *str1, const char *str2);
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 
 #define TEST 1
 #define MAX_STRING_SIZE 2048
 
-
+/*
+ * To apply the corresponding functions to function pointers in the string structure.
+ */
 string *init_string()
 {
-	/*
- 	 * To apply the corresponding functions to function pointers in the string_s structure.
- 	 */
-	string *buf = (string*)calloc(1, sizeof(string));
-	if(!buf)	
+	string *tmp = (string*)calloc(1, sizeof(string));
+	if(!tmp)	
 		return NULL;
 	
-	buf->add 		= &add_string;
-	buf->add_from_terminal 	= &add_string_from_terminal;
-	buf->print 		= &print_string;
-	buf->free 		= &free_string;
-	buf->pop_back 		= &pop_back_string;
-	buf->get_size 		= &get_string_size;
-	buf->get_data 		= &get_string_data;
-	buf->clear 		= &clear_string;
+	tmp->add 		= &add_string;
+	tmp->add_from_terminal 	= &add_string_from_terminal;
+	tmp->print 		= &print_string;
+	tmp->free 		= &free_string;
+	tmp->pop_back 		= &pop_back_string;
+	tmp->get_size 		= &get_string_size;
+	tmp->get_data 		= &get_string_data;
+	tmp->clear 		= &clear_string;
 
-	return buf;
+	return tmp;
 }
 
 
@@ -75,40 +74,40 @@ string *init_string()
  * it adds a space at the end of the last word in it and adds the data
  * in "_data" to string->data.
  */
-size_t add_string(string *str, const char *_data)
+size_t add_string(string *self, const char *_data)
 {
 	char *str_data_buf = NULL;
 	size_t str_size = 0;
-	if (str->data != NULL) {
-		str_size = strlen(str->data);
+	if (self->data != NULL) {
+		str_size = strlen(self->data);
 	}
 
 	if(_data == NULL || (strlen(_data) + str_size) > MAX_STRING_SIZE) 	
 		return 0;
 
 	if(str_size == 0) {	
-		if ((str->data = xstrdup(_data)) == NULL) {
+		if ((self->data = xstrdup(_data)) == NULL) {
 			return 0;
 		} else {
-			return strlen(str->data);
+			return strlen(self->data);
 		}
 	}
 	
-	//'str->data' doluysa sonuna bir boşlukla beraber '_data' yı ekle.
-	if((str_data_buf = xstrdup(str->data)) == NULL) {
+	//'self->data' doluysa sonuna bir boşlukla beraber '_data' yı ekle.
+	if((str_data_buf = xstrdup(self->data)) == NULL) {
 		return 0;
 	} else {
-		free(str->data);
-		str->data = NULL;
+		free(self->data);
+		self->data = NULL;
 		
-		if ((str->data = (char *)calloc(((strlen(str_data_buf) + strlen(_data)) + 1), sizeof(char))) == NULL) {
+		if ((self->data = (char *)calloc(((strlen(str_data_buf) + strlen(_data)) + 1), sizeof(char))) == NULL) {
 			free(str_data_buf);
 			return 0;
 		} else {
-			sprintf(str->data, "%s %s", str_data_buf, _data);
+			sprintf(self->data, "%s %s", str_data_buf, _data);
 			free(str_data_buf);
 			str_data_buf = NULL;
-			return (strlen(str->data) + 1);
+			return (strlen(self->data) + 1);
 		}
 	}		
 }
@@ -123,23 +122,23 @@ size_t add_string(string *str, const char *_data)
  * before the function call. If the function succeeds, it returns 0, if it fails,
  * it returns a negative value.
  */
-int add_string_from_terminal(string *str)
+int add_string_from_terminal(string *self)
 {	
 	char *input_buf = NULL;
 	size_t str_size = 0;
 
-	if (str->data != NULL) {
-		str_size = strlen(str->data);
+	if (self->data != NULL) {
+		str_size = strlen(self->data);
 	}
 
 	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str_size),sizeof(char))) == NULL) {
 		if (TEST)
-			fprintf(stderr, "Hata: input_buf %d\n", __LINE__);
+			fprintf(stderr, "ERROR: input_buf %d\n", __LINE__);
 		return -1;
 	}
 	if (fgets(input_buf, (MAX_STRING_SIZE - str_size), stdin) == NULL) {
 		if (TEST) {
-			fprintf(stderr, "Hata: fgets %d\n", __LINE__);
+			fprintf(stderr, "ERROR: fgets %d\n", __LINE__);
 		}
 		free(input_buf);
 		input_buf = NULL;
@@ -161,7 +160,7 @@ int add_string_from_terminal(string *str)
         	*new_line = '\0';
 	}
 
-	int res = add_string(str, input_buf);
+	int res = add_string(self, input_buf);
 	free(input_buf);
 	input_buf = NULL;
 	if (res > 0)
@@ -174,12 +173,11 @@ int add_string_from_terminal(string *str)
 
 int pop_back_string(string *self)
 {
-	size_t str_size = 0;
-	if (self->data != NULL) {
-		str_size = strlen(self->data);
+	if (self->data == NULL) {
+		return -1;
 	}
 
-	if (str_size == 0) 
+	if (strlen(self->data) == 0) 
 		return -1;
 
 	char *ptr = self->data;
@@ -222,9 +220,9 @@ size_t	get_string_size(const string *self)
 
 
 
-const char 	*get_string_data(const string *self)
+const char *get_string_data(const string *self)
 {
-	return self->data;
+	return (const char *)self->data;
 }
 
 
@@ -257,6 +255,7 @@ void free_string(string *str)
 		str = NULL;
 	}
 }
+
 
 /*
  * Copies @str to a dynamically allocated memory and returns it. 
