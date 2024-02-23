@@ -10,7 +10,7 @@
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 /*							XSTRING.H							*/
-#include <sys/types.h>
+#include <sys/types.h>	/* size_t */
 typedef struct string{
 	char 		*data;
 
@@ -43,8 +43,7 @@ int swap_word(string *str, char *str1, const char *str2);
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 
-#define TEST 1
-#define MAX_STRING_SIZE 2048
+#define MAX_STRING_SIZE 4096
 
 /*
  * To apply the corresponding functions to function pointers in the string structure.
@@ -82,8 +81,13 @@ size_t add_string(string *self, const char *_data)
 		str_size = strlen(self->data);
 	}
 
-	if(_data == NULL || (strlen(_data) + str_size) > MAX_STRING_SIZE) 	
+	if(_data == NULL || (strlen(_data) + str_size) > MAX_STRING_SIZE) {
+		fprintf(stderr, "%s = %lu, %s %s\n", "MAX_STRING_SIZE",
+			(size_t)MAX_STRING_SIZE, 
+			"if you need you can edit the MAX_STRING_SIZE value in the xstring.h",
+			"header file according to your needs");
 		return 0;
+	}
 
 	if(str_size == 0) {	
 		if ((self->data = xstrdup(_data)) == NULL) {
@@ -94,21 +98,20 @@ size_t add_string(string *self, const char *_data)
 	}
 	
 	//'self->data' doluysa sonuna bir boşlukla beraber '_data' yı ekle.
-	if((str_data_buf = xstrdup(self->data)) == NULL) {
+	if((str_data_buf = xstrdup(self->data)) == NULL)
+		return 0;
+	
+	free(self->data);
+	self->data = NULL;
+		
+	if ((self->data = (char *)calloc(((strlen(str_data_buf) + strlen(_data)) + 1), sizeof(char))) == NULL) {
+		free(str_data_buf);
 		return 0;
 	} else {
-		free(self->data);
-		self->data = NULL;
-		
-		if ((self->data = (char *)calloc(((strlen(str_data_buf) + strlen(_data)) + 1), sizeof(char))) == NULL) {
-			free(str_data_buf);
-			return 0;
-		} else {
-			sprintf(self->data, "%s %s", str_data_buf, _data);
-			free(str_data_buf);
-			str_data_buf = NULL;
-			return (strlen(self->data) + 1);
-		}
+		sprintf(self->data, "%s %s", str_data_buf, _data);
+		free(str_data_buf);
+		str_data_buf = NULL;
+		return (strlen(self->data) + 1);
 	}		
 }
 
@@ -127,23 +130,25 @@ int add_string_from_terminal(string *self)
 	char *input_buf = NULL;
 	size_t str_size = 0;
 
-	if (self->data != NULL) {
+	if (self->data != NULL)
 		str_size = strlen(self->data);
+
+	if ((MAX_STRING_SIZE - str_size) <= 0) {
+		fprintf(stderr, "%s = %lu, %s %s\n", "MAX_STRING_SIZE",
+			(size_t)MAX_STRING_SIZE, 
+			"if you need you can edit the MAX_STRING_SIZE value in the xstring.h",
+			"header file according to your needs");
 	}
 
-	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str_size),sizeof(char))) == NULL) {
-		if (TEST)
-			fprintf(stderr, "ERROR: input_buf %d\n", __LINE__);
+	if ((input_buf = (char *)calloc((MAX_STRING_SIZE - str_size),sizeof(char))) == NULL)
 		return -1;
-	}
+		
 	if (fgets(input_buf, (MAX_STRING_SIZE - str_size), stdin) == NULL) {
-		if (TEST) {
-			fprintf(stderr, "ERROR: fgets %d\n", __LINE__);
-		}
 		free(input_buf);
 		input_buf = NULL;
 		return -1;
     	}
+	
 	if (strlen(input_buf) == 1) {
 		free(input_buf);
 		input_buf = NULL;
@@ -156,13 +161,14 @@ int add_string_from_terminal(string *self)
 	 * O yüzden \n karakterini bulup onu NULL ile değiştirelim. 
 	 */
 	char *new_line = strchr(input_buf, '\n');
-	if (new_line != NULL) {
+	
+	if (new_line != NULL)
         	*new_line = '\0';
-	}
 
 	int res = add_string(self, input_buf);
 	free(input_buf);
 	input_buf = NULL;
+	
 	if (res > 0)
 		return 1;
 	else 
@@ -173,9 +179,8 @@ int add_string_from_terminal(string *self)
 
 int pop_back_string(string *self)
 {
-	if (self->data == NULL) {
+	if (self->data == NULL)
 		return -1;
-	}
 
 	if (strlen(self->data) == 0) 
 		return -1;
@@ -277,4 +282,4 @@ char *xstrdup(const char *str)
 	return tmp;
 }
 
-#endif
+#endif /* _XSTRING_H_ */
