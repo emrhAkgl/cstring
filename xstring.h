@@ -179,30 +179,23 @@ int add_string_from_terminal(string *self)
 
 int pop_back_string(string *self)
 {
-	if (self->data == NULL)
-		return -1;
-
-	if (strlen(self->data) == 0) 
-		return -1;
-
-	char *ptr = self->data;
-	size_t size = strlen(self->data);
-	for(int i = size -1; i >= 0; i--) {
-		if (ptr[i] == ' ') {
-			int j = i;
-			char *buf = (char *)malloc((j + 1) * sizeof(char));
-			if (!buf) {
-				return -1;
-			} else {
-				memmove(buf, ptr, j);
-				free(self->data);
-				self->data = buf;
-				return 0;
-			}
-			
-		}
-	}
-
+	char *tmp = NULL;
+	size_t tmp_len = 0;
+	
+        if (!self->data || strlen(self->data) == 0)
+	        return -1;
+	
+	char *wht_space = strrchr(self->data, ' ');
+	if (!wht_space)
+	        return -1;
+	
+	tmp_len = (size_t)(wht_space - self->data);
+	tmp = (char*)calloc(sizeof(char), tmp_len);
+	memmove(tmp, self->data, tmp_len);
+	*(tmp+tmp_len) = '\0';
+	
+	free(self->data);
+	self->data = tmp;
 	return 0;
 }
 
@@ -281,5 +274,4 @@ char *xstrdup(const char *str)
 	
 	return tmp;
 }
-
 #endif /* _XSTRING_H_ */
