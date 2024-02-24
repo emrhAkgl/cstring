@@ -6,6 +6,8 @@ Note that this is a personal project. The project file consists of a single .h f
 The string structure is currently 72 bytes in size on 64-bit GNU/Linux due to the function pointers it contains. 
 I have to put up with this to give an OOP approach to the string structure. 
 
+If you have any suggestions or comments, please feel free to write to my e-mail address below. 
+
 ## Installation
 
 You can download the library directly from 
