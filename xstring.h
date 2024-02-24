@@ -6,7 +6,6 @@
 #include <stddef.h>
 #include <stdlib.h>	/* malloc, calloc ...*/
 
-
 /************************************************************************************************************************/
 /************************************************************************************************************************/
 /*							XSTRING.H							*/
@@ -40,7 +39,7 @@ char *xstrdup(const char *s);
 /* Henüz yapmadıklarım*/
 int erase_word(string *str, const char *word);
 int swap_word(string *str, char *str1, const char *str2);
-/************************************************************************************************************************/
+/************************************************ XSTRING.H *************************************************************/
 /************************************************************************************************************************/
 
 #define MAX_STRING_SIZE 4096
@@ -66,12 +65,11 @@ string *init_string()
 	return tmp;
 }
 
-
 /*
- * To add a string to the data pointer in the string_s structure. 
- * If the pointer is empty it allocates memory, if it is not empty 
- * it adds a space at the end of the last word in it and adds the data
- * in "_data" to string->data.
+ * Adds @_data to the data member of @self. 
+ * @self: struct to which we will add @_data to the member named data.
+ * @_data: A pointer to the text to be added to @self->data.
+ * Note: If 'self->data' is not empty, it appends '_data' with a space at the end. 
  */
 size_t add_string(string *self, const char *_data)
 {
@@ -97,7 +95,6 @@ size_t add_string(string *self, const char *_data)
 		}
 	}
 	
-	//'self->data' doluysa sonuna bir boşlukla beraber '_data' yı ekle.
 	if((str_data_buf = xstrdup(self->data)) == NULL)
 		return 0;
 	
@@ -115,15 +112,10 @@ size_t add_string(string *self, const char *_data)
 	}		
 }
 
-
 /*
- * It does the same job as the add_string function. The only difference is that 
- * instead of giving a value with the _data parameter, we get it from the terminal
- * with the user's input. Since it does not request the user to enter a value 
- * (each user may want to give a different message, so the function can be edited 
- * in the future and this situation can be solved), each user must give his own message 
- * before the function call. If the function succeeds, it returns 0, if it fails,
- * it returns a negative value.
+ * Adds a char array to the data member of @self from the terminal. 
+ * If @self->data is not empty, the value received with a space is appended to @self->data. 
+ * @self: struct containing the destination of the string received from the terminal. (@self->data)
  */
 int add_string_from_terminal(string *self)
 {	
@@ -155,11 +147,7 @@ int add_string_from_terminal(string *self)
 		return 0;
 	}
 
-	/*
-	 *Buraya kadar 'buf için hafızadan alan aldık ve kullanıcıdan buraya giriş yapmasını istedik.
-	 * fgets giriş sırasında \n karakterini de değişkene aktarıyor, biz de bunu istemiyoruz.
-	 * O yüzden \n karakterini bulup onu NULL ile değiştirelim. 
-	 */
+	/* We need to delete the '\n' character at the end of the received string. */
 	char *new_line = strchr(input_buf, '\n');
 	
 	if (new_line != NULL)
@@ -175,8 +163,9 @@ int add_string_from_terminal(string *self)
 		return 0;
 }
 
-
-
+/*
+ * If @self->data is not empty, delete the word at the end. 
+ */
 int pop_back_string(string *self)
 {
 	char *tmp = NULL;
@@ -199,8 +188,9 @@ int pop_back_string(string *self)
 	return 0;
 }
 
-
-
+/*
+ * If @self->data is not empty, it prints the value in it to the terminal. 
+ */
 void print_string(const string *self)
 {
 	if (self->data){
@@ -209,18 +199,25 @@ void print_string(const string *self)
 	}
 }
 
-
-
+/*
+ * If @self->data is not empty, it returns the number of characters in it. 
+ * @self: @self: The struct that contains our return value.
+ */
 size_t	get_string_size(const string *self)
 {
 	return strlen(self->data);
 }
 
-
-
+/*
+ * If the 'data' member of the @self parameter is not empty, 
+ * it returns the 'data' member as 'const char *'. 
+ */
 const char *get_string_data(const string *self)
 {
-	return (const char *)self->data;
+	if (self->data)
+		return (const char *)self->data;
+	else
+		return NULL;
 }
 
 
