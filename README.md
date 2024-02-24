@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 
 	hi->clear(hi);
 
+	printf("\n");
 	(*hi).add(hi, answ);
 
 	const char *data = hi->get_data(hi);
