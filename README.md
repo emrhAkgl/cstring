@@ -3,6 +3,9 @@
 The xstring library was written in C for a string approach similar to that in C++, but much less professional. 
 Note that this is a personal project. The project file consists of a single .h file and is written on Linux. 
 
+The string structure is currently 72 bytes in size on 64-bit GNU/Linux due to the function pointers it contains. 
+I have to put up with this to give an OOP approach to the string structure. 
+
 ## Installation
 
 You can download the library directly from 
