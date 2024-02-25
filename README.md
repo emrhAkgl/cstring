@@ -12,11 +12,11 @@ If you have any suggestions or comments, please feel free to write to my e-mail 
 
 You can download the library directly from 
 ```
-https://github.com/emrhAkgl/xstring
+https://github.com/akgulemrah/xstring
 ```
 or you can use the 
 ```bash
-git clone https://github.com/emrhAkgl/xstring
+git clone https://github.com/akgulemrah/xstring
 ```
 
 
