@@ -37,8 +37,8 @@ void clear_string(string *self);
 char *xstrdup(const char *s);
 
 /* Henüz yapmadıklarım*/
-int erase_word(string *str, const char *word);
-int swap_word(string *str, char *str1, const char *str2);
+int erase_word(string *self, const char *word);
+int swap_word(string *self, char *word1, const char *word2);
 /************************************************ XSTRING.H *************************************************************/
 /************************************************************************************************************************/
 
