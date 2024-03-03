@@ -13,7 +13,7 @@
 typedef struct string{
 	char 		*data;
 
-	int		(*add)(struct string *self, const char *src, size_t count);
+	size_t		(*add)(struct string *self, const char *src);
 	int 		(*add_from_terminal)(struct string *self);
 	void 		(*print)(const struct string *self);
 	void 		(*free)(struct string *self);
@@ -25,7 +25,7 @@ typedef struct string{
 
 /* FUNCTIONS */
 string	*init_string(void);
-int	add_string(string *self, const char *src, size_t count);
+size_t	add_string(string *self, const char *src);
 int	add_string_from_terminal(string *self);
 void	print_string(const string *self);
 void	free_string(string *self);
@@ -64,51 +64,13 @@ string *init_string()
 
 	return tmp;
 }
-size_t get_len(const char *src)
-{
-	size_t len = 0;
-	char *c = src;
-	while (*c++)
-		len++;
 
-	return len;
-}
 /*
  * Adds @_data to the data member of @self. 
  * @self: struct to which we will add @_data to the member named data.
  * @_data: A pointer to the text to be added to @self->data.
  * Note: If 'self->data' is not empty, it appends '_data' with a space at the end. 
  */
-int add_string(string *dest, const char *src, size_t count)
-{
-	char *c1, *c2;
-	size_t dest_len = get_len(dest->data);
-	if ((dest_len + count + 1) > MAX_STRING_SIZE)
-		return -1;
-	
-	char *tmp = (char *)calloc(1, (dest_len + count + 1));
-	if (!tmp)
-		return -1;
-
-	c1 = tmp;
-	c2 = dest->data;
-
-	if (count) {
-		while ((*c1++ = *c2++) != '\0')
-			;
-		c2 = src;
-		while ((*c1++ = *c2++) != '\0') {
-			if (--count == 0) {
-				*c1 = '\0';
-				break;
-			}
-		}
-	}
-	free(dest->data);
-	dest->data = tmp;
-	return 0;	
-}
-/*
 size_t add_string(string *self, const char *_data)
 {
 	char *str_data_buf = NULL;
@@ -148,7 +110,7 @@ size_t add_string(string *self, const char *_data)
 		str_data_buf = NULL;
 		return (strlen(self->data) + 1);
 	}		
-} */
+} 
 
 /*
  * Adds a char array to the data member of @self from the terminal. 
