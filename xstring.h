@@ -13,7 +13,7 @@
 typedef struct string{
 	char 		*data;
 
-	size_t		(*add)(struct string *self, const char *src);
+	size_t		(*add)(struct string *self, const char *_data);
 	int 		(*add_from_terminal)(struct string *self);
 	void 		(*print)(const struct string *self);
 	void 		(*free)(struct string *self);
@@ -25,7 +25,7 @@ typedef struct string{
 
 /* FUNCTIONS */
 string	*init_string(void);
-size_t	add_string(string *self, const char *src);
+size_t	add_string(string *self, const char *_data);
 int	add_string_from_terminal(string *self);
 void	print_string(const string *self);
 void	free_string(string *self);
@@ -110,7 +110,7 @@ size_t add_string(string *self, const char *_data)
 		str_data_buf = NULL;
 		return (strlen(self->data) + 1);
 	}		
-} 
+}
 
 /*
  * Adds a char array to the data member of @self from the terminal. 
