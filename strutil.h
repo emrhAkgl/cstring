@@ -172,11 +172,12 @@ void str_clear(str *self) {
 	}
 }
 
+
 /*
  * It releases @str.
  */
 void str_free(str *self) {
-	if (self) {
+	if (self) { // Check NULL
 		if (self->data) {
 			free(self->data);
 			self->data = NULL;
@@ -195,12 +196,12 @@ static inline char* get_dyn_input(size_t max_str_size) {
 	if (buffer == NULL) 
 		return NULL;
 
-	size_t current_size = CHUNK_SIZE; // Mevcut bellek boyutu
-	size_t length = 0; // Mevcut dizenin uzunluğu
+	size_t current_size = CHUNK_SIZE; // Size of available memory.
+	size_t length = 0; // Length of current string
 
 	int c;
 	while ((c = getchar()) != EOF && c != '\n') {
-		if (length + 1 >= current_size) { // Belleği genişlet
+		if (length + 1 >= current_size) { // Expand memory
 			current_size += CHUNK_SIZE;			
 			char* tmp = realloc(buffer, current_size);
 
@@ -217,10 +218,10 @@ static inline char* get_dyn_input(size_t max_str_size) {
 		}
 
 		buffer[length++] = (char)c;
-		buffer[length] = '\0'; // Diziyi sonlandır
+		buffer[length] = '\0'; // End the series
 	}
 
-	// Sonunda fazladan belleği serbest bırak
+	// Finally release the extra memory
 	char *result = (char *)malloc((length + 1) * sizeof(char));
 	if (result == NULL) {
 		free(buffer);
