@@ -1,6 +1,10 @@
 #ifndef _STRUTIL_H_
 #define _STRUTIL_H_ 1
 
+#ifdef __cplusplus
+extern "C" {
+#endif	/* __cplusplus */
+
 #include <stdio.h>   /* printf */
 #include <string.h>  /* strlen, strcpy ... */
 #include <stdlib.h>  /* malloc, calloc, realloc ... */
@@ -235,5 +239,8 @@ static inline char* get_dyn_input(size_t max_str_size) {
 	return result;
 }
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* _XSTRING_H_ */
