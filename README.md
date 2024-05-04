@@ -1,6 +1,6 @@
-# xstring
+# strutil
 
-The xstring library was written in C for a string approach similar to that in C++, but much less professional. 
+The strutil library was written in C for a string approach similar to that in C++, but much less professional. 
 Note that this is a personal project. The project file consists of a single .h file and is written on Linux. 
 
 The string structure is currently 72 bytes in size on 64-bit GNU/Linux due to the function pointers it contains. 
@@ -12,18 +12,18 @@ If you have any suggestions or comments, please feel free to write to my e-mail 
 
 You can download the library directly from 
 ```
-https://github.com/akgulemrah/xstring
+https://github.com/akgulemrah/strutil
 ```
 or you can use the 
 ```bash
-git clone https://github.com/akgulemrah/xstring
+git clone https://github.com/akgulemrah/strutil
 ```
 
 
 ## Usage
 
 ```c
-#include "xstring.h"
+#include "strutil.h"
 #include <stdio.h>
 
 int main(int argc, char **argv)
@@ -33,28 +33,28 @@ int main(int argc, char **argv)
 	char *str3 = "what's up?";
 	char *answ = "Good :)";
 
-	string *hi = init_string();
+	str *hi = str_init();
 	if (!hi) {	
-		fprintf(stderr, "init_string returned NULL");
+		fprintf(stderr, "str_init returned NULL");
 		return 1;
 	}
 
-	hi->add(hi, str1); 
-	hi->add(hi, str2); 
-	hi->add(hi, str3); 
+	str_add(hi, str1); 
+	str_add(hi, str2); 
+	str_add(hi, str3); 
 
-	hi->print(hi); /* Hello World! What's up? */
+	str_print(hi); /* Hello World! What's up? */
 
-	hi->clear(hi);
+	str_clear(hi);
 
 	printf("\n");
-	(*hi).add(hi, answ);
+	str_add(hi, answ);
 
-	const char *data = hi->get_data(hi);
+	const char *data = str_get_data(hi);
 
 	/* Good :) */
 	/* hi size: 7 */
-	printf("\n%s\nhi size: %lu\n", data, hi->get_size(hi));
+	printf("\n%s\nhi size: %lu\n", data, str_get_size(hi));
 	/*					|		*/
 	/*					V		*/
 	/*				strlen(hi->data)	*/
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 ```
 
 ## Build On GNU/Linux
-Copy your xstring.h file, preferably to the same directory as your main.c file. Create a file named "CMakeLists.txt":
+Copy your strutil.h file, preferably to the same directory as your main.c file. Create a file named "CMakeLists.txt":
 ```bash
 touch CMakeLists.txt
 ```
@@ -108,10 +108,7 @@ Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
-## Contact:
-```
-akgulemrah@proton.me
-```
+
 
 ## License
 
