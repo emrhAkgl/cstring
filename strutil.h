@@ -24,12 +24,12 @@ int     str_pop_back(str *self, char sep);
 size_t  str_get_size(const str *self);
 void    str_clear(str *self);
 const char *str_get_data(const str *self);
+int str_rem_word(str *self, const char *needle);
 
 static inline char* get_dyn_input(size_t max_str_size);
 
 
 /* Henüz yapmadıklarım */
-int erase_word(str *self, const char *word);
 int swap_word(str *self, char *word1, const char *word2);
 /************************************************ XSTRING.H *************************************************************/
 /************************************************************************************************************************/
@@ -39,7 +39,7 @@ int swap_word(str *self, char *word1, const char *word2);
 /*
  * To apply the corresponding functions to function pointers in the str structure.
  */
-str *init_string() {
+str *str_init() {
 	str *tmp = (str *)calloc(1, sizeof(str));
 	if (!tmp)
 		return NULL;
@@ -88,7 +88,7 @@ size_t str_add(str *self, const char *_data) {
  */
 size_t str_input(str *self) {
 	if (self == NULL) {
-		self = init_string();
+		self = str_init();
 		if (!self) {
 		fprintf(stderr, "Line: %d \nstr pointer was NULL and "
 				"memory allocation for str failed!",
@@ -237,6 +237,38 @@ static inline char* get_dyn_input(size_t max_str_size) {
 
 	free(buffer);
 	return result;
+}
+
+
+int str_rem_word(str *self, const char *needle)
+{
+        if (!self || !self->data || !needle)
+            return -1;
+            
+        size_t self_data_size = strlen(self->data);
+        size_t needle_size = strlen(needle);
+        
+        if (needle_size > self_data_size)
+            return -1;
+            
+        char *L = NULL, *R = NULL;
+        L = strstr(self->data, needle);
+        if(!L)
+            return -1;
+
+        memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
+	self->data[self_data_size - needle_size] = '\0';
+        
+        char *buf = (char*)realloc(self->data, 
+                ((self_data_size - needle_size)) +1);
+        
+	if (!buf)	// realloc başarısız oldu; ancak kelime diziden kaldırıldı ve sonuna NULL eklendi
+		return -2;
+
+        if (buf)
+            self->data = buf;
+
+	return 0;
 }
 
 #ifdef __cplusplus
