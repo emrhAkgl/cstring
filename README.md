@@ -29,7 +29,7 @@ git clone https://github.com/akgulemrah/strutil
 int main(int argc, char **argv)
 {
 	char *str1 = "Hello";
-	char *str2 = "World!";
+	char *str2 = "Jack!";
 	char *str3 = "what's up?";
 	char *answ = "Good :)";
 
@@ -40,14 +40,15 @@ int main(int argc, char **argv)
 	}
 
 	str_add(hi, str1); 
+	str_add(hi, " ");
 	str_add(hi, str2); 
+	str_add(hi, " ");
 	str_add(hi, str3); 
 
 	str_print(hi); /* Hello World! What's up? */
 
 	str_clear(hi);
 
-	printf("\n");
 	str_add(hi, answ);
 
 	const char *data = str_get_data(hi);
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
 	/*					V		*/
 	/*				strlen(hi->data)	*/
 
-	hi->free(hi);
+	str_free(hi);
 	return 0;
 }
 ```
