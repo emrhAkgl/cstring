@@ -242,23 +242,31 @@ static inline char* get_dyn_input(size_t max_str_size) {
 
 int str_rem_word(str *self, const char *needle)
 {
+	size_t self_data_size = 0;
+	size_t needle_size = 0;
+
         if (!self || !self->data || !needle)
             return -1;
             
-        size_t self_data_size = strlen(self->data);
-        size_t needle_size = strlen(needle);
+        self_data_size = strlen(self->data);
+        needle_size = strlen(needle);
         
         if (needle_size > self_data_size)
             return -1;
             
         char *L = NULL, *R = NULL;
         L = strstr(self->data, needle);
+	
         if(!L)
             return -1;
 
         memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
 	self->data[self_data_size - needle_size] = '\0';
-        
+
+	/* If ‘self’ is dynamic, the operation is successful and 0 is returned.  */
+	if (!self->isdynamic)
+		return 0;
+	
         char *buf = (char*)realloc(self->data, 
                 ((self_data_size - needle_size)) +1);
         
