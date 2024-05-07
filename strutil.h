@@ -14,7 +14,7 @@ extern "C" {
 
 typedef struct Str {
 	char	*data;
-	uint8_t is_dynamic 1;
+	uint8_t is_dynamic;
 } str;
 
 
