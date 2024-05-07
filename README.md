@@ -19,7 +19,8 @@ git clone https://github.com/akgulemrah/strutil
 
 
 ## Usage
-
+First of all, the examples here assume that you only save the header file (strutil.h) in your directory. 
+If you downloaded the repo using git, you can delete files other than strutil.h and follow the steps below. 
 
 ```c
 #include <stdio.h>
