@@ -23,45 +23,32 @@ git clone https://github.com/akgulemrah/strutil
 ## Usage
 
 ```c
-#include "strutil.h"
 #include <stdio.h>
+#include "strutil.h"
 
-int main(int argc, char **argv)
-{
-	char *str1 = "Hello";
-	char *str2 = "Jack!";
-	char *str3 = "what's up?";
-	char *answ = "Good :)";
+int main() {
+    // Initialize a new Str structure
+    str *my_string = str_init();
 
-	str *hi = str_init();
-	if (!hi) {	
-		fprintf(stderr, "str_init returned NULL");
-		return 1;
-	}
+    // Add some strings to the Str structure
+    str_add(my_string, "Hello");
+    str_add(my_string, " ");
+    str_add(my_string, "world!");
 
-	str_add(hi, str1); 
-	str_add(hi, " ");
-	str_add(hi, str2); 
-	str_add(hi, " ");
-	str_add(hi, str3); 
+    // Print the string in the Str structure
+    printf("Original String: ");
+    str_print(my_string);
 
-	str_print(hi); /* Hello World! What's up? */
+    // Remove the word "world" from the string
+    str_rem_word(my_string, "world");
 
-	str_clear(hi);
+    // Print the modified string
+    printf("\nModified String: %s\n", str_get_data(my_string);
 
-	str_add(hi, answ);
+    // Free the memory allocated for the Str structure
+    str_free(my_string);
 
-	const char *data = str_get_data(hi);
-
-	/* Good :) */
-	/* hi size: 7 */
-	printf("\n%s\nhi size: %lu\n", data, str_get_size(hi));
-	/*					|		*/
-	/*					V		*/
-	/*				strlen(hi->data)	*/
-
-	str_free(hi);
-	return 0;
+    return 0;
 }
 ```
 
