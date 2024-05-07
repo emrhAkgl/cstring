@@ -1,12 +1,10 @@
 # strutil
 
-The strutil library was written in C for a string approach similar to that in C++, but much less professional. 
-Note that this is a personal project. The project file consists of a single .h file and is written on Linux. 
+Strutil.h is a simple and useful header file for text processing functions in the C programming language. This header file contains a set of functions that facilitate text processing tasks and provide dynamic memory management.
 
-The string structure is currently 72 bytes in size on 64-bit GNU/Linux due to the function pointers it contains. 
-I have to put up with this to give an OOP approach to the string structure. 
+Functions include adding text, taking input from the user, removing a specific word from the text, printing the text, getting the size of the text, and more. Additionally, memory operations required for dynamic memory management are automatically handled.
 
-If you have any suggestions or comments, please feel free to write to my e-mail address below. 
+This header file offers a quick and efficient solution for C programmers to streamline text processing tasks.
 
 ## Installation
 
