@@ -81,13 +81,11 @@ add_executable(strutil ${SOURCES})
 # Include header files in the target
 target_include_directories(strutil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 ```
-```bash
-mkdir build
-cd build
-```
 
 You can compile your files as follows: 
 ```bash
+mkdir build
+cd build
 cmake ..
 make
 ```
