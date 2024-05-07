@@ -68,22 +68,19 @@ project(StrUtil C)
 
 # List the header file(s) and source file(s)
 set(HEADERS
-    strutil.h
+	strutil.h
 )
 
 set(SOURCES
-    main.c  # If there's a sample application, include main.c here
+	main.c  # If there's a sample application, include main.c here
 )
 
 # Create the compilation target
-add_executable(strutil_example ${SOURCES})
+add_executable(strutil ${SOURCES})
 
 # Include header files in the target
 target_include_directories(strutil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
 ```
-
-Then create a folder called "build" to compile our file and go inside the folder:
 ```bash
 mkdir build
 cd build
