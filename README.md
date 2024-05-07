@@ -28,29 +28,30 @@ If you downloaded the repo using git, you can delete files other than strutil.h 
 #include <stdio.h>
 #include "strutil.h"
 
-int main() {
-    // Initialize a new Str structure
-    str *my_string = str_init();
+int main(int argc, char **argv)
+{
+	// Initialize a new Str structure
+	str *my_string = str_init();
 
-    // Add some strings to the Str structure
-    str_add(my_string, "Hello");
-    str_add(my_string, " ");
-    str_add(my_string, "world!");
+	// Add some strings to the Str structure
+	str_add(my_string, "Hello");
+	str_add(my_string, " ");
+	str_add(my_string, "world!");
 
-    // Print the string in the Str structure
-    printf("Original String: ");
-    str_print(my_string);
+	// Print the string in the Str structure
+	printf("Original String: ");
+	str_print(my_string);
 
-    // Remove the word "world" from the string
-    str_rem_word(my_string, "world");
+	// Remove the word "world" from the string
+	str_rem_word(my_string, "world");
 
-    // Print the modified string
-    printf("\nModified String: %s\n", str_get_data(my_string);
+	// Print the modified string
+	printf("\nModified String: %s\n", str_get_data(my_string));
 
-    // Free the memory allocated for the Str structure
-    str_free(my_string);
+	// Free the memory allocated for the Str structure
+	str_free(my_string);
 
-    return 0;
+	return 0;
 }
 ```
 
