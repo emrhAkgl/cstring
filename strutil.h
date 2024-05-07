@@ -32,7 +32,15 @@ int str_rem_word(str *self, const char *needle);
 
 static inline char* get_dyn_input(size_t max_str_size);
 int str_swap_word(str *self, const char *word1, const char *word2);
+
+//Functions planned to be written.
+int str_to_upper(str *self);
+int str_to_lower(str *self);
+int str_to_title_case(str *self);
+int str_to_sentence_case(str *self);
 /* <- FUNCTIONS */
+
+
 
 /*
  * str_init() - Initializes a new Str structure.
