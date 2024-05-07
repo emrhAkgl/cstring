@@ -8,27 +8,27 @@ extern "C" {
 #include <stdio.h>   /* printf */
 #include <string.h>  /* strlen, strcpy ... */
 #include <stdlib.h>  /* malloc, calloc, realloc ... */
-
+#include <stdint.h>  /* uint8_t */
 
 #define MAX_STRING_SIZE 4096
 
 typedef struct Str {
 	char	*data;
-	unsigned int is_dynamic : 1;
+	uint8_t is_dynamic 1;
 } str;
 
 
 /* FUNCTIONS -> */
-str  	*str_init(void);
-int  str_add(str *self, const char *_data);
+str	*str_init(void);
+int	str_add(str *self, const char *_data);
 size_t  str_input(str *self);
 void    str_print(const str *self);
 void    str_free(str *self);
 int     str_pop_back(str *self, char sep);
 size_t  str_get_size(const str *self);
 void    str_clear(str *self);
+int	str_rem_word(str *self, const char *needle);
 const char *str_get_data(const str *self);
-int str_rem_word(str *self, const char *needle);
 
 static inline char* get_dyn_input(size_t max_str_size);
 int str_swap_word(str *self, const char *word1, const char *word2);
