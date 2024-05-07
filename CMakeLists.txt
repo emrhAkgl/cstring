@@ -11,7 +11,7 @@ set(SOURCES
 )
 
 # Create the compilation target
-add_executable(strutil_example ${SOURCES})
+add_executable(strutil ${SOURCES})
 
 # Include header files in the target
 target_include_directories(strutil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
