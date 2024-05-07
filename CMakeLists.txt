@@ -1,9 +1,17 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.0)
+project(StrUtil C)
 
-project(example_project)
+# List the header file(s) and source file(s)
+set(HEADERS
+    strutil.h
+)
 
-add_compile_options(-Wall -Wextra -std=c11)
+set(SOURCES
+    main.c  # If there's a sample application, include main.c here
+)
 
-add_executable(example main.c)
+# Create the compilation target
+add_executable(strutil ${SOURCES})
 
-target_include_directories(example PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# Include header files in the target
+target_include_directories(strutil PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
