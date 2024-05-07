@@ -111,10 +111,7 @@ size_t str_input(str *self)
 	if (self == NULL) {
 		self = str_init();
 		if (!self) {
-		fprintf(stderr, "Line: %d \nstr pointer was NULL and "
-				"memory allocation for str failed!",
-			(__LINE__ - 1));
-		return 0;
+			return 0;
 		}
 	}
 
@@ -310,18 +307,18 @@ static inline char* get_dyn_input(size_t max_str_size)
 int str_rem_word(str *self, const char *needle)
 {
         if (!self || !self->data || !needle)
-            return -1;
+        	return -1;
             
         size_t self_data_size = strlen(self->data);
         size_t needle_size = strlen(needle);
         
         if (needle_size > self_data_size)
-            return -1;
+        	return -1;
             
         char *L = NULL;
         L = strstr(self->data, needle);
         if(!L)
-            return -1;
+        	return -1;
 
         memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
 	self->data[self_data_size - needle_size] = '\0';
@@ -333,7 +330,7 @@ int str_rem_word(str *self, const char *needle)
 		return -2;
 
         if (buf)
-            self->data = buf;
+        	self->data = buf;
 
 	return 0;
 }
@@ -358,36 +355,36 @@ int str_rem_word(str *self, const char *needle)
  */
 int str_swap_word(str *self, const char *word1, const char *word2)
 {
-    if (!self || !self->data || !self->is_dynamic || !word1 || !word2)
-        return -1;
+	if (!self || !self->data || !self->is_dynamic || !word1 || !word2)
+		return -1;
 
-    size_t self_data_size = strlen(self->data);
-    size_t word1_size = strlen(word1);
-    size_t word2_size = strlen(word2);
+	size_t self_data_size = strlen(self->data);
+	size_t word1_size = strlen(word1);
+	size_t word2_size = strlen(word2);
 
-    char *L = strstr(self->data, word1);
-    if (!L)
-        return -1;
+	char *L = strstr(self->data, word1);
+	if (!L)
+		return -1;
 
-    size_t new_size = self_data_size - word1_size + word2_size;
-    char *buf = (char *)malloc(sizeof(char) * (new_size + 1)); // +1 for null terminator
-    if (!buf)
-        return -1;
+	size_t new_size = self_data_size - word1_size + word2_size;
+	char *buf = (char *)malloc(sizeof(char) * (new_size + 1)); // +1 for null terminator
+	if (!buf)
+		return -1;
 
-    // Copy everything before word1
-    strncpy(buf, self->data, L - self->data);
-    buf[L - self->data] = '\0'; // Null terminate the buffer
+	// Copy everything before word1
+	strncpy(buf, self->data, L - self->data);
+	buf[L - self->data] = '\0'; // Null terminate the buffer
 
-    // Copy word2
-    strcat(buf, word2);
+	// Copy word2
+	strcat(buf, word2);
 
-    // Copy everything after word1
-    strcat(buf, L + word1_size);
+	// Copy everything after word1
+	strcat(buf, L + word1_size);
 
-    free(self->data);
-    self->data = buf;
+	free(self->data);
+	self->data = buf;
 
-    return 0;
+	return 0;
 }
 
 
