@@ -1,3 +1,5 @@
+[![Tested on Linux](https://img.shields.io/badge/Tested%20on-Linux-green.svg)](https://github.com/akgulemrah/strutil)
+
 # strutil
 
 Strutil.h is a simple and useful header file for text processing functions in the C programming language. This header file contains a set of functions that facilitate text processing tasks and provide dynamic memory management.
