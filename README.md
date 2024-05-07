@@ -20,6 +20,7 @@ git clone https://github.com/akgulemrah/strutil
 
 ## Usage
 
+
 ```c
 #include <stdio.h>
 #include "strutil.h"
@@ -92,7 +93,7 @@ make
 
 If you do not receive any error, your file is ready to run:
 ```bash
-./example
+./strutil
 ```
 
 That's all :)
