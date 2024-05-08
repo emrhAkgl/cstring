@@ -160,7 +160,7 @@ size_t str_input(str *self)
  */
 int str_pop_back(str *self, char sep)
 {
-	if (!self->data || strlen(self->data) == 0)
+	if (self->data == NULL && strlen(self->data) == 0)
 		return -1;
 
 	char *p = strrchr(self->data, sep);
