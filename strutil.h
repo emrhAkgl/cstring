@@ -25,10 +25,10 @@ size_t  str_input(str *self);
 void    str_print(const str *self);
 void    str_free(str *self);
 int     str_pop_back(str *self, char sep);
-size_t  str_get_size(const str *self);
+inline size_t  str_get_size(const str *self);
 void    str_clear(str *self);
 int	str_rem_word(str *self, const char *needle);
-const char *str_get_data(const str *self);
+inline const char *str_get_data(const str *self);
 
 static inline char* get_dyn_input(size_t max_str_size);
 int str_swap_word(str *self, const char *word1, const char *word2);
@@ -192,7 +192,7 @@ void str_print(const str *self)
  * If @self->data is not empty, it returns the number of characters in it.
  * @self: The struct that contains our return value.
  */
-size_t str_get_size(const str *self)
+inline size_t str_get_size(const str *self)
 {
     	return (self->data ? strlen(self->data) : 0);
 }
@@ -201,7 +201,7 @@ size_t str_get_size(const str *self)
  * If the 'data' member of the @self parameter is not empty,
  * it returns the 'data' member as 'const char *'.
  */
-const char *str_get_data(const str *self)
+inline const char *str_get_data(const str *self)
 {
     	return (const char *)self->data;
 }
