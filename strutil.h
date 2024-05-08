@@ -77,7 +77,7 @@ str *str_init()
  */
 int str_add(str *self, const char *_data)
 {
-	if (self == NULL || _data == NULL)
+	if (self == NULL && _data == NULL)
 		return -1;
 
 	size_t self_data_size = self->data ? strlen(self->data) : 0;
@@ -314,7 +314,7 @@ static inline char* get_dyn_input(size_t max_str_size)
  */
 int str_rem_word(str *self, const char *needle)
 {
-        if (!self || !self->data || !needle)
+        if (!self && !self->data && !needle)
         	return -1;
             
         size_t self_data_size = strlen(self->data);
@@ -363,7 +363,7 @@ int str_rem_word(str *self, const char *needle)
  */
 int str_swap_word(str *self, const char *word1, const char *word2)
 {
-	if (!self || !self->data || !self->is_dynamic || !word1 || !word2)
+	if (!self && !self->data && !self->is_dynamic && !word1 && !word2)
 		return -1;
 
 	size_t self_data_size = strlen(self->data);
