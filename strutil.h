@@ -431,7 +431,7 @@ int str_to_lower(str *self)
 
 int str_to_sentence_case(str *self, const char *sep)
 {
-	if (!self && !self->data)
+	if (!self && !self->data && !sep)
 		return -1;
 
 	char *end = NULL;
