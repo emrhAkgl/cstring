@@ -9,6 +9,7 @@ extern "C" {
 #include <string.h>  /* strlen, strcpy ... */
 #include <stdlib.h>  /* malloc, calloc, realloc ... */
 #include <stdint.h>  /* uint8_t */
+#include <ctype.h>
 
 #define MAX_STRING_SIZE 4096
 
@@ -25,10 +26,10 @@ size_t  str_input(str *self);
 void    str_print(const str *self);
 void    str_free(str *self);
 int     str_pop_back(str *self, char sep);
-inline size_t  str_get_size(const str *self);
+size_t  str_get_size(const str *self);
 void    str_clear(str *self);
 int	str_rem_word(str *self, const char *needle);
-inline const char *str_get_data(const str *self);
+const char *str_get_data(const str *self);
 
 static inline char* get_dyn_input(size_t max_str_size);
 int str_swap_word(str *self, const char *word1, const char *word2);
@@ -37,7 +38,7 @@ int str_swap_word(str *self, const char *word1, const char *word2);
 int str_to_upper(str *self);
 int str_to_lower(str *self);
 int str_to_title_case(str *self);
-int str_to_sentence_case(str *self);
+int str_to_sentence_case(str *self, const char *sep);
 /* <- FUNCTIONS */
 
 
@@ -192,7 +193,7 @@ void str_print(const str *self)
  * If @self->data is not empty, it returns the number of characters in it.
  * @self: The struct that contains our return value.
  */
-inline size_t str_get_size(const str *self)
+size_t str_get_size(const str *self)
 {
     	return (self->data ? strlen(self->data) : 0);
 }
@@ -201,7 +202,7 @@ inline size_t str_get_size(const str *self)
  * If the 'data' member of the @self parameter is not empty,
  * it returns the 'data' member as 'const char *'.
  */
-inline const char *str_get_data(const str *self)
+const char *str_get_data(const str *self)
 {
     	return (const char *)self->data;
 }
@@ -395,6 +396,68 @@ int str_swap_word(str *self, const char *word1, const char *word2)
 	return 0;
 }
 
+
+int str_to_upper(str *self)
+{
+	char *p = self->data;
+
+	if (!self && !self->data)
+		return -1;
+	
+	while (*p) {
+		*p = toupper((int)*p);
+		p++;
+	}
+
+	return 0;
+}
+
+
+int str_to_lower(str *self)
+{
+	char *p = self->data;
+
+	if (!self && !self->data)
+		return -1;
+	
+	while (*p) {
+		*p = tolower((int)*p);
+		p++;
+	}
+
+	return 0;
+}
+
+
+int str_to_sentence_case(str *self, const char *sep)
+{
+	if (!self && !self->data)
+		return -1;
+
+	char *end = NULL;
+	char *self_data_ptr = self->data;
+
+	if (*self_data_ptr) {
+		*self_data_ptr = toupper((int)*self_data_ptr);
+		self_data_ptr++;
+	}
+
+	end = strstr(self_data_ptr, sep);
+	while (end != NULL && *end != '\0') {
+		for (int i = 0; i < strlen(sep); i++) {
+			end++;
+			self_data_ptr++;
+			if (*end == '\0') {
+				break;
+			}
+		}
+		*end = toupper((int)*end);
+		end = strstr(self_data_ptr, sep);
+	}
+	return 0;
+}
+
+int str_to_title_case(str *self);
 
 #ifdef __cplusplus
 }
