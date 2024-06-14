@@ -78,8 +78,14 @@ str *str_init()
  */
 int str_add(str *self, const char *_data)
 {
-	if (self == NULL && _data == NULL)
+	if (_data == NULL)
 		return -1;
+	
+	if (self == NULL) {
+		if ((self = str_init()) == NULL) {
+			return -1;
+		}
+	}
 
 	size_t self_data_size = self->data ? strlen(self->data) : 0;
 	size_t new_size = self_data_size + strlen(_data) + 1; // +2 for null
@@ -118,8 +124,7 @@ int str_add(str *self, const char *_data)
 size_t str_input(str *self)
 {
 	if (self == NULL) {
-		self = str_init();
-		if (!self) {
+		if ((self = str_init()) == NULL) {
 			return 0;
 		}
 	}
@@ -133,11 +138,11 @@ size_t str_input(str *self)
 
 	char *buf = get_dyn_input(MAX_STRING_SIZE - strlen(self->data));
 	if (!buf)
-		return 0;
+		return -1;
 
 	char *self_data_ptr = (char *)realloc(self->data, (strlen(self->data) + strlen(buf) + 1));
 	if (!self_data_ptr)
-		return 0;
+		return -1;
 
 	strncat(self->data, buf, strlen(buf));
 
