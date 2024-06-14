@@ -10,6 +10,7 @@ extern "C" {
 #include <stdlib.h>  /* malloc, calloc, realloc ... */
 #include <stdint.h>  /* uint8_t */
 #include <ctype.h>
+#include <assert.h>
 
 #define MAX_STRING_SIZE 4096
 
@@ -78,24 +79,18 @@ str *str_init()
  */
 int str_add(str *self, const char *_data)
 {
-	if (_data == NULL)
-		return -1;
-	
-	if (self == NULL) {
-		if ((self = str_init()) == NULL) {
-			return -1;
-		}
-	}
+	assert(self != NULL);
+	assert(_data != NULL);
 
 	size_t self_data_size = self->data ? strlen(self->data) : 0;
-	size_t new_size = self_data_size + strlen(_data) + 1; // +2 for null
+	size_t new_size = self_data_size + strlen(_data) + 2; // +2 for null
 
 	if (new_size >= MAX_STRING_SIZE)
-		return -1;
+		return -2;
 
 	char *new_data = realloc(self->data, new_size);
 
-	if (new_data == NULL)
+	if (!new_data)
 		return -1;
 
 	if (self->data == NULL) {
@@ -123,12 +118,7 @@ int str_add(str *self, const char *_data)
 
 size_t str_input(str *self)
 {
-	if (self == NULL) {
-		if ((self = str_init()) == NULL) {
-			return 0;
-		}
-	}
-
+	assert(self != NULL);
 
 	if (!self->data) {
 		self->data = get_dyn_input(MAX_STRING_SIZE);
@@ -166,7 +156,7 @@ size_t str_input(str *self)
  */
 int str_pop_back(str *self, char sep)
 {
-	if (self->data == NULL && strlen(self->data) == 0)
+	if (self->data == NULL || strlen(self->data) == 0)
 		return -1;
 
 	char *p = strrchr(self->data, sep);
@@ -194,6 +184,7 @@ void str_print(const str *self)
 	}
 }
 
+
 /*
  * If @self->data is not empty, it returns the number of characters in it.
  * @self: The struct that contains our return value.
@@ -202,6 +193,7 @@ size_t str_get_size(const str *self)
 {
     	return (self->data ? strlen(self->data) : 0);
 }
+
 
 /*
  * If the 'data' member of the @self parameter is not empty,
