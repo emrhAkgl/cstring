@@ -11,8 +11,21 @@ extern "C" {
 #include <stdint.h>  /* uint8_t */
 #include <ctype.h>
 #include <assert.h>
+#include <errno.h>
 
-#define MAX_STRING_SIZE 4096
+#if defined(__has_attribute)
+  #if __has_attribute(warn_unused_result)
+    #define STR_WARN_UNUSED_RESULT	\
+        __attribute((warn_unused_result))
+  #else
+    #define STR_WARN_UNUSED_RESULT
+  #endif
+#else
+  #define STR_WARN_UNUSED_RESULT
+#endif
+
+#define MAX_STRING_SIZE SIZE_MAX
+
 
 typedef struct Str {
 	char	*data;
@@ -21,9 +34,9 @@ typedef struct Str {
 
 
 /* FUNCTIONS -> */
-str	*str_init(void);
+str	*str_init(void) STR_WARN_UNUSED_RESULT;
 int	str_add(str *self, const char *_data);
-size_t  str_input(str *self);
+int  	str_input(str *self);
 void    str_print(const str *self);
 void    str_free(str *self);
 int     str_pop_back(str *self, char sep);
@@ -32,7 +45,7 @@ void    str_clear(str *self);
 int	str_rem_word(str *self, const char *needle);
 const char *str_get_data(const str *self);
 
-static inline char* get_dyn_input(size_t max_str_size);
+static char* get_dyn_input(size_t max_str_size) STR_WARN_UNUSED_RESULT;
 int str_swap_word(str *self, const char *word1, const char *word2);
 
 //Functions planned to be written.
@@ -80,18 +93,20 @@ str *str_init()
 int str_add(str *self, const char *_data)
 {
 	assert(self != NULL);
-	assert(_data != NULL);
+
+	if (_data == NULL) {
+		return -EINVAL;
+	}
 
 	size_t self_data_size = self->data ? strlen(self->data) : 0;
 	size_t new_size = self_data_size + strlen(_data) + 2; // +2 for null
-
-	if (new_size >= MAX_STRING_SIZE)
-		return -2;
+	if (new_size >= MAX_STRING_SIZE) {
+		return -EINVAL;
+	}
 
 	char *new_data = realloc(self->data, new_size);
-
 	if (!new_data)
-		return -1;
+		return -ENOMEM;
 
 	if (self->data == NULL) {
 		strcpy(new_data, _data); // Copy data if it's the first addition
@@ -113,16 +128,16 @@ int str_add(str *self, const char *_data)
  * If @self->data is not empty, the received value is appended with a space.
  * 
  * Returns:
- *     The length of the string added to @self->data, or 0 if an error occurs
+ *     0 on successful completion
  */
 
-size_t str_input(str *self)
+int str_input(str *self)
 {
 	assert(self != NULL);
 
 	if (!self->data) {
 		self->data = get_dyn_input(MAX_STRING_SIZE);
-		return (self->data ? strlen(self->data) : 0);
+		return (self->data ? 0 : -EINVAL);
 	}
 
 
@@ -132,12 +147,12 @@ size_t str_input(str *self)
 
 	char *self_data_ptr = (char *)realloc(self->data, (strlen(self->data) + strlen(buf) + 1));
 	if (!self_data_ptr)
-		return -1;
+		return -ENOMEM;
 
 	strncat(self->data, buf, strlen(buf));
 
 	free(buf);
-	return strlen(self->data);
+	return 0;
 }
 
 
@@ -157,17 +172,17 @@ size_t str_input(str *self)
 int str_pop_back(str *self, char sep)
 {
 	if (self->data == NULL || strlen(self->data) == 0)
-		return -1;
+		return -EINVAL;
 
 	char *p = strrchr(self->data, sep);
 	if (!p)
-		return -1;
+		return -EINVAL;
 
 	*p = '\0';
 
 	char *self_data_ptr = (char *)realloc(self->data, strlen(self->data) + 1); // Trim memory
 	if (!self_data_ptr)
-		return -1;
+		return -ENOMEM;
 	
 	self->data = self_data_ptr;
 	return 0;
@@ -247,7 +262,7 @@ void str_free(str *self)
  *     A dynamically allocated buffer containing the input string read from the terminal,
  *     or NULL if memory allocation fails or EOF is encountered before any characters are read.
  */
-static inline char* get_dyn_input(size_t max_str_size)
+static char* get_dyn_input(size_t max_str_size)
 {
 	const int CHUNK_SIZE = 10;
 	char* buffer = (char *)calloc(CHUNK_SIZE,  sizeof(char));
@@ -313,18 +328,18 @@ static inline char* get_dyn_input(size_t max_str_size)
 int str_rem_word(str *self, const char *needle)
 {
         if (!self && !self->data && !needle)
-        	return -1;
+        	return -EINVAL;
             
         size_t self_data_size = strlen(self->data);
         size_t needle_size = strlen(needle);
         
         if (needle_size > self_data_size)
-        	return -1;
+        	return -EINVAL;
             
         char *L = NULL;
         L = strstr(self->data, needle);
         if(!L)
-        	return -1;
+        	return -EINVAL;
 
         memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
 	self->data[self_data_size - needle_size] = '\0';
@@ -333,7 +348,7 @@ int str_rem_word(str *self, const char *needle)
                 ((self_data_size - needle_size)) +1);
         
 	if (!buf)	// realloc başarısız oldu; ancak kelime diziden kaldırıldı ve sonuna NULL eklendi
-		return -2;
+		return -ENOMEM;
 
         if (buf)
         	self->data = buf;
