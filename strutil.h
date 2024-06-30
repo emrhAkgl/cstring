@@ -15,8 +15,7 @@ extern "C" {
 
 #if defined(__has_attribute)
   #if __has_attribute(warn_unused_result)
-    #define STR_WARN_UNUSED_RESULT	\
-        __attribute((warn_unused_result))
+    #define STR_WARN_UNUSED_RESULT __attribute((warn_unused_result))
   #else
     #define STR_WARN_UNUSED_RESULT
   #endif
