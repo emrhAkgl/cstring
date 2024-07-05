@@ -98,7 +98,7 @@ int str_add(str *self, const char *_data)
 	}
 
 	size_t self_data_size = self->data ? strlen(self->data) : 0;
-	size_t new_size = self_data_size + strlen(_data) + 2; // +2 for null
+	size_t new_size = self_data_size + strlen(_data) + 1; // +1 for null
 	if (new_size >= MAX_STRING_SIZE) {
 		return -EINVAL;
 	}
@@ -106,6 +106,8 @@ int str_add(str *self, const char *_data)
 	char *new_data = realloc(self->data, new_size);
 	if (!new_data)
 		return -ENOMEM;
+	
+	self->data = new_data;
 
 	if (self->data == NULL) {
 		strcpy(new_data, _data); // Copy data if it's the first addition
