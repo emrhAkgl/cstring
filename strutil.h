@@ -91,29 +91,26 @@ str *str_init()
  */
 int str_add(str *self, const char *_data)
 {
-	assert(self != NULL);
-
-	if (_data == NULL) {
+	if (self == NULL || _data == NULL)
 		return -EINVAL;
-	}
 
 	size_t self_data_size = self->data ? strlen(self->data) : 0;
 	size_t new_size = self_data_size + strlen(_data) + 1; // +1 for null
-	if (new_size >= MAX_STRING_SIZE) {
+
+	if (new_size >= MAX_STRING_SIZE)
 		return -EINVAL;
-	}
 
 	char *new_data = realloc(self->data, new_size);
 	if (!new_data)
 		return -ENOMEM;
+		
+	self->data = new_data;
 
-	if (self->data == NULL) {
+	if (strlen(self->data) == 0) {
 		strcpy(new_data, _data); // Copy data if it's the first addition
 	} else {
 		strcat(new_data, _data); // Append new data
 	}
-
-	self->data = new_data;
 
 	return 0;
 }
