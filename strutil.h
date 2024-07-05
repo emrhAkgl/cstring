@@ -107,9 +107,9 @@ int str_add(str *self, const char *_data)
 	self->data = new_data;
 
 	if (strlen(self->data) == 0) {
-		strcpy(new_data, _data); // Copy data if it's the first addition
+		strcpy(self->data, _data); // Copy data if it's the first addition
 	} else {
-		strcat(new_data, _data); // Append new data
+		strcat(self->data, _data); // Append new data
 	}
 
 	return 0;
