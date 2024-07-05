@@ -106,8 +106,6 @@ int str_add(str *self, const char *_data)
 	char *new_data = realloc(self->data, new_size);
 	if (!new_data)
 		return -ENOMEM;
-	
-	self->data = new_data;
 
 	if (self->data == NULL) {
 		strcpy(new_data, _data); // Copy data if it's the first addition
