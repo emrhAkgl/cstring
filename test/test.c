@@ -3,9 +3,8 @@
 
 #include "strutil.h"
 
-#define STR_PRINTERR() do {											\
-	fprintf(stderr, "\033[31m%s failed, file: %s, line: %d\033[0m\n", __func__, __FILE__, __LINE__);	\
-} while (0)
+#define STR_PRINTERR() \
+	fprintf(stderr, "\033[31m%s failed, file: %s, line: %d\033[0m\n", __func__, __FILE__, __LINE__);
 
 unsigned int test_count = 1;
 
