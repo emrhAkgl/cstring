@@ -1,10 +1,6 @@
 #ifndef _STRUTIL_H_
 #define _STRUTIL_H_ 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif	/* __cplusplus */
-
 #include <stdio.h>   /* printf */
 #include <string.h>  /* strlen, strcpy ... */
 #include <stdlib.h>  /* malloc, calloc, realloc ... */
@@ -15,7 +11,8 @@ extern "C" {
 
 #if defined(__has_attribute)
   #if __has_attribute(warn_unused_result)
-    #define STR_WARN_UNUSED_RESULT __attribute((warn_unused_result))
+    #define STR_WARN_UNUSED_RESULT	\
+        __attribute((warn_unused_result))
   #else
     #define STR_WARN_UNUSED_RESULT
   #endif
@@ -33,7 +30,7 @@ typedef struct Str {
 
 
 /* FUNCTIONS -> */
-str	*str_init(void) STR_WARN_UNUSED_RESULT;
+str	*str_init(void);
 int	str_add(str *self, const char *_data);
 int  	str_input(str *self);
 void    str_print(const str *self);
@@ -43,15 +40,13 @@ size_t  str_get_size(const str *self);
 void    str_clear(str *self);
 int	str_rem_word(str *self, const char *needle);
 const char *str_get_data(const str *self);
-
-static char* get_dyn_input(size_t max_str_size) STR_WARN_UNUSED_RESULT;
-int str_swap_word(str *self, const char *word1, const char *word2);
-
-//Functions planned to be written.
+int str_add_input(str *self);
 int str_to_upper(str *self);
 int str_to_lower(str *self);
+char* get_dyn_input(size_t max_str_size);
+int str_swap_word(str *self, const char *word1, const char *word2);
 int str_to_title_case(str *self);
-int str_to_sentence_case(str *self, const char *sep);
+
 /* <- FUNCTIONS */
 
 
@@ -94,24 +89,29 @@ int str_add(str *self, const char *_data)
 	if (self == NULL || _data == NULL)
 		return -EINVAL;
 
-	size_t self_data_size = self->data ? strlen(self->data) : 0;
-	size_t new_size = self_data_size + strlen(_data) + 1; // +1 for null
+	size_t size = strlen(_data);
 
-	if (new_size >= MAX_STRING_SIZE)
-		return -EINVAL;
+	if (self->data != NULL) {
+		size += strlen(self->data);
 
-	char *new_data = realloc(self->data, new_size);
-	if (!new_data)
-		return -ENOMEM;
-		
-	self->data = new_data;
-
-	if (strlen(self->data) == 0) {
-		strcpy(self->data, _data); // Copy data if it's the first addition
+		char *p = (char *)realloc(self->data, (size + 1));
+		if (p) {
+			self->data = p;
+		} else {
+			return -ENOMEM;
+		}
+		strcat(self->data, _data);
+		return 0;
 	} else {
-		strcat(self->data, _data); // Append new data
+		self->data = (char *)malloc((size + 1) * sizeof(char));
+		if (!self->data) {
+			return -ENOMEM;
+		}
+		strcpy(self->data, _data);
+		if (strlen(self->data) != strlen(_data)) {
+			return -1;
+		}
 	}
-
 	return 0;
 }
 
@@ -126,31 +126,45 @@ int str_add(str *self, const char *_data)
  * Returns:
  *     0 on successful completion
  */
-
 int str_input(str *self)
 {
-	assert(self != NULL);
+	if (self == NULL || self->data != NULL)
+		return -1;
 
-	if (!self->data) {
+	self->data = get_dyn_input(MAX_STRING_SIZE);
+	return (self->data ? 0 : -1);
+}
+
+
+
+int str_add_input(str *self)
+{
+	if (self == NULL)
+		return -1;
+
+	if (self->data == NULL) {
 		self->data = get_dyn_input(MAX_STRING_SIZE);
-		return (self->data ? 0 : -EINVAL);
+		
+		if (self->data == NULL) {
+			return -2;
+		}
+		return 0;
 	}
-
 
 	char *buf = get_dyn_input(MAX_STRING_SIZE - strlen(self->data));
 	if (!buf)
-		return -1;
+		return -3;
 
-	char *self_data_ptr = (char *)realloc(self->data, (strlen(self->data) + strlen(buf) + 1));
-	if (!self_data_ptr)
-		return -ENOMEM;
+	char *new_data = (char *)realloc(self->data, (strlen(self->data) + strlen(buf) + 1));
+	if (!new_data)
+		return -4;
 
+	self->data = new_data;
 	strncat(self->data, buf, strlen(buf));
 
 	free(buf);
 	return 0;
 }
-
 
 /*
  * str_pop_back() - Removes the last character from the string in a Str structure.
@@ -173,7 +187,7 @@ int str_pop_back(str *self, char sep)
 	char *p = strrchr(self->data, sep);
 	if (!p)
 		return -EINVAL;
-
+	p++;
 	*p = '\0';
 
 	char *self_data_ptr = (char *)realloc(self->data, strlen(self->data) + 1); // Trim memory
@@ -258,7 +272,7 @@ void str_free(str *self)
  *     A dynamically allocated buffer containing the input string read from the terminal,
  *     or NULL if memory allocation fails or EOF is encountered before any characters are read.
  */
-static char* get_dyn_input(size_t max_str_size)
+char* get_dyn_input(size_t max_str_size)
 {
 	const int CHUNK_SIZE = 10;
 	char* buffer = (char *)calloc(CHUNK_SIZE,  sizeof(char));
@@ -437,38 +451,24 @@ int str_to_lower(str *self)
 }
 
 
-int str_to_sentence_case(str *self, const char *sep)
+int str_to_title_case(str *self)
 {
-	if (!self && !self->data && !sep)
+	if (self == NULL || self->data == NULL || strlen(self->data) == 0)
 		return -1;
+	
+	char *p = NULL;
+	short flag = 1;
+	p = self->data;
 
-	char *end = NULL;
-	char *self_data_ptr = self->data;
-
-	if (*self_data_ptr) {
-		*self_data_ptr = toupper((int)*self_data_ptr);
-		self_data_ptr++;
-	}
-
-	end = strstr(self_data_ptr, sep);
-	while (end != NULL && *end != '\0') {
-		for (int i = 0; i < strlen(sep); i++) {
-			end++;
-			self_data_ptr++;
-			if (*end == '\0') {
-				break;
-			}
+	for (size_t i = 0; p[i] != '\0'; i++) {
+		if (flag && isalpha(p[i])) {
+			p[i] = toupper(p[i]);
+			flag = 0;
+		} else if (p[i] == ' ') {
+			flag = 1;
 		}
-		*end = toupper((int)*end);
-		end = strstr(self_data_ptr, sep);
 	}
 	return 0;
 }
-
-int str_to_title_case(str *self);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 
 #endif /* _XSTRING_H_ */
