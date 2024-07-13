@@ -1,10 +1,10 @@
 #ifndef _STRUTIL_H_
-#define _STRUTIL_H_ 1
+#define _STRUTIL_H_
 
-#include <stdio.h>   /* printf */
-#include <string.h>  /* strlen, strcpy ... */
-#include <stdlib.h>  /* malloc, calloc, realloc ... */
-#include <stdint.h>  /* uint8_t */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <assert.h>
 #include <errno.h>
