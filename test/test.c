@@ -13,7 +13,6 @@ str *test_str_init()
 	str *s = str_init();
 	if (s == NULL || s->is_dynamic != 1) {
 		STR_PRINTERR();
-		str_clear(s);
 		return NULL;
 	}
 	printf("Test %d test_str_init test passed\n", test_count++);
