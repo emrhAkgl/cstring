@@ -55,8 +55,7 @@ int str_to_title_case(str *self);
  * 
  * Returns:
  *     A pointer to the newly initialized Str structure, or NULL if memory allocation fails.
- */
-
+ */
 str *str_init()
 {
 	str *tmp = (str *)calloc(1, sizeof(str));
@@ -131,8 +130,7 @@ int str_input(str *self)
 	return (self->data ? 0 : -1);
 }
 
-
-
+
 int str_add_input(str *self)
 {
 	if (self == NULL)
@@ -161,6 +159,7 @@ int str_add_input(str *self)
 	free(buf);
 	return 0;
 }
+
 
 /*
  * str_pop_back() - Removes the last character from the string in a Str structure.
@@ -194,6 +193,7 @@ int str_pop_back(str *self, char sep)
 	return 0;
 }
 
+
 /*
  * If @self->data is not empty, it prints the value in it to the terminal.
  */
@@ -224,6 +224,7 @@ const char *str_get_data(const str *self)
 {
     	return (const char *)self->data;
 }
+
 
 /*
  * It only releases @self->data. It does not delete @self;
@@ -314,6 +315,7 @@ char* get_dyn_input(size_t max_str_size)
 	free(buffer);
 	return result;
 }
+
 
 /*
  * str_rem_word() - Removes a specific word from the string.
