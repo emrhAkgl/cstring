@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-
 #include "strutil.h"
 
-#define STR_PRINTERR() \
-	fprintf(stderr, "\033[31m%s failed, file: %s, line: %d\033[0m\n", __func__, __FILE__, __LINE__);
+#define STR_PRINTERR() do {											\
+	fprintf(stderr, "\033[31m%s failed, file: %s, line: %d\033[0m\n", __func__, __FILE__, __LINE__);	\
+} while (0)
 
 unsigned int test_count = 1;
 
@@ -13,6 +13,7 @@ str *test_str_init()
 	str *s = str_init();
 	if (s == NULL || s->is_dynamic != 1) {
 		STR_PRINTERR();
+		str_clear(s);
 		return NULL;
 	}
 	printf("Test %d test_str_init test passed\n", test_count++);
@@ -60,7 +61,7 @@ void test_str_input(str *s)
 
 	if (strcmp(s->data, "Hello") != 0) {
 		STR_PRINTERR();
-		fprintf(stderr, "expected: \"Hello\", entered: %s\n", s->data);
+		fprintf(stderr, "expected: \"HELLO\", entered: %s\n", s->data);
 		str_clear(s);
 		return;
 	}
@@ -184,6 +185,74 @@ void test_str_swap_word(str *s)
 	fflush(stdout);	
 }
 
+void test_str_to_upper(str *s)
+{
+	if (!s) {
+		STR_PRINTERR();
+		return;
+	}
+
+	const char test_msg_l[] = "Hello World!";
+	const char test_msg_u[] = "HELLO WORLD!";
+
+	int add_resp = str_add(s, test_msg_l);
+	if (add_resp != 0) {
+		STR_PRINTERR();
+		return;
+	}
+
+	int upper_resp = str_to_upper(s);
+	if (upper_resp != 0) {
+		str_clear(s);
+		STR_PRINTERR();
+		return;
+	}
+
+	if (strcmp(s->data, test_msg_u) != 0) {
+		STR_PRINTERR();
+		str_clear(s);
+		return;
+	}
+
+	str_clear(s);
+	printf("Test %d test_str_to_upper passed\n", test_count++);
+	fflush(stdout);	
+}
+
+void test_str_to_lower(str *s)
+{
+	if (!s) {
+		STR_PRINTERR();
+		return;
+	}
+
+	const char test_msg_u[] = "HELLO WORLD!";
+	const char test_msg_l[] = "hello world!";
+
+	int add_resp = str_add(s, test_msg_u);
+	if (add_resp != 0) {
+		STR_PRINTERR();
+		return;
+	}
+
+	int upper_resp = str_to_lower(s);
+	if (upper_resp != 0) {
+		str_clear(s);
+		STR_PRINTERR();
+		return;
+	}
+
+	if (strcmp(s->data, test_msg_l) != 0) {
+		STR_PRINTERR();
+		str_clear(s);
+		return;
+	}
+
+	str_clear(s);
+	printf("Test %d test_str_to_lower passed\n", test_count++);
+	fflush(stdout);	
+}
+ 
 int main()
 {
 	str *s = test_str_init();
@@ -196,6 +265,8 @@ int main()
 	test_str_get_size(s);
 	test_str_rem_word(s);
 	test_str_swap_word(s);
+	test_str_to_upper(s);
+	test_str_to_lower(s);
 	
 	str_free(s);
 	return 0;
