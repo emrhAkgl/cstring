@@ -5,16 +5,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <ctype.h>
 #include <assert.h>
 #include <errno.h>
+#include <ctype.h>
 
 #if defined(__clang__) || defined(__GNUC__)
   #define STR_WARN_UNUSED_RESULT __attribute((warn_unused_result))
 #else
   #define STR_WARN_UNUSED_RESULT 
 #endif
-
 
 const size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
 
@@ -55,7 +54,7 @@ int str_to_title_case(str *self);
  * 
  * Returns:
  *     A pointer to the newly initialized Str structure, or NULL if memory allocation fails.
- */
+ */
 str *str_init()
 {
 	str *tmp = (str *)calloc(1, sizeof(str));
@@ -130,7 +129,7 @@ int str_input(str *self)
 	return (self->data ? 0 : -1);
 }
 
-
+
 int str_add_input(str *self)
 {
 	if (self == NULL)
@@ -419,50 +418,47 @@ int str_swap_word(str *self, const char *word1, const char *word2)
 
 int str_to_upper(str *self)
 {
-	char *p = self->data;
-
-	if (!self && !self->data)
+	if (self == NULL || self->data == NULL)
 		return -1;
-	
+
+	char *p = self->data;
 	while (*p) {
-		*p = toupper((int)*p);
+		if ((*p >= 'a') && (*p <= 'z'))
+			*p &= ~(1 << 5);
 		p++;
 	}
-
 	return 0;
 }
 
 
 int str_to_lower(str *self)
 {
-	char *p = self->data;
-
 	if (!self && !self->data)
 		return -1;
 	
+	char *p = self->data;
 	while (*p) {
-		*p = tolower((int)*p);
+		if ((*p >= 'A') && (*p <= 'Z'))
+			*p |= (1 << 5); // yes, faster than tolower :/
 		p++;
 	}
-
 	return 0;
 }
 
 
 int str_to_title_case(str *self)
 {
-	if (self == NULL || self->data == NULL || strlen(self->data) == 0)
+	if (!self || !self->data || strlen(self->data) == 0)
 		return -1;
 	
-	char *p = NULL;
+	char *p = self->data;
 	short flag = 1;
-	p = self->data;
 
-	for (size_t i = 0; p[i] != '\0'; i++) {
-		if (flag && isalpha(p[i])) {
-			p[i] = toupper(p[i]);
+	while (*p) {
+		if (flag && (*p >= 'a') && (*p <= 'z')) {
+			*p &= ~(1 << 5);
 			flag = 0;
-		} else if (p[i] == ' ') {
+		} else if (*p == ' ') {
 			flag = 1;
 		}
 	}
