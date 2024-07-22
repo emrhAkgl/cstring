@@ -41,6 +41,7 @@ int str_to_lower(str *self);
 char* get_dyn_input(size_t max_str_size);
 int str_swap_word(str *self, const char *word1, const char *word2);
 int str_to_title_case(str *self);
+int str_reverse(str *self);
 
 /* <- FUNCTIONS */
 
@@ -55,7 +56,7 @@ int str_to_title_case(str *self);
  * Returns:
  *     A pointer to the newly initialized Str structure, or NULL if memory allocation fails.
  */
-str *str_init()
+str *str_init(void)
 {
 	str *tmp = (str *)calloc(1, sizeof(str));
 	if (!tmp)
@@ -464,5 +465,28 @@ int str_to_title_case(str *self)
 	}
 	return 0;
 }
+
+int str_reverse(str *self)
+{
+    if (!self || !self->data)
+        return -EINVAL;
+    if (strlen(self->data) == 0)
+        return -EINVAL;
+    
+    char buf;
+    char *data = self->data;
+    size_t head = 0;
+    size_t tail = strlen(self->data) - 1;
+
+    while (head < tail) {
+        buf = data[head];
+        data[head] = data[tail];
+        data[tail] = buf;
+        head++;
+        tail--;
+    }
+    return 0;
+}
+
 
 #endif /* _XSTRING_H_ */
