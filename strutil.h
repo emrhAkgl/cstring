@@ -488,5 +488,4 @@ int str_reverse(str *self)
     return 0;
 }
 
-
 #endif /* _XSTRING_H_ */
