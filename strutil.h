@@ -1,3 +1,46 @@
+/*
+ * strutil.h - String Utility Functions
+ *
+ * This header file provides a set of functions for manipulating and managing
+ * strings in a thread-safe manner. The `str` structure allows for dynamic
+ * string management with support for various operations such as adding,
+ * modifying, and querying string data.
+ *
+ * Features:
+ * - Dynamic memory management for string data.
+ * - Thread safety through mutex locking.
+ * - Functions for common string operations like conversion, reversal, and
+ *   manipulation.
+ *
+ * The functions provided in this header file include:
+ * - `str_init()`: Initialize a new `Str` structure.
+ * - `str_add()`: Append a string to the existing data.
+ * - `str_input()`: Read a string from standard input.
+ * - `str_add_input()`: Append input from standard input to existing data.
+ * - `str_pop_back()`: Remove trailing data after a specified separator.
+ * - `str_print()`: Print the string data to standard output.
+ * - `str_get_size()`: Get the length of the string.
+ * - `str_clear()`: Clear the string data.
+ * - `str_free()`: Free the `Str` structure and its associated resources.
+ * - `str_rem_word()`: Remove a specified word from the string.
+ * - `str_swap_word()`: Swap occurrences of two words in the string.
+ * - `str_to_upper()`: Convert the string to uppercase.
+ * - `str_to_lower()`: Convert the string to lowercase.
+ * - `str_to_title_case()`: Convert the string to title case.
+ * - `str_reverse()`: Reverse the string.
+ * - `str_is_empty()`: Check if the string is empty.
+ * - `get_dyn_input()`: Helper function to read input dynamically.
+ *
+ * This file includes necessary headers for standard operations and thread safety,
+ * and defines the `Str` structure along with associated function prototypes.
+ *
+ * Author: Emrah Akgül
+ * Date: 27.07.2024
+ *
+ * License: unlicense
+ */
+
+
 #ifndef _STRUTIL_H_
 #define _STRUTIL_H_
 
@@ -8,6 +51,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <pthread.h>
+
 
 #if defined(__clang__) || defined(__GNUC__)
   #define STR_WARN_UNUSED_RESULT __attribute((warn_unused_result))
@@ -20,42 +66,280 @@ const size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
 
 typedef struct Str {
 	char	*data;
-	uint8_t is_dynamic;
+	unsigned char is_dynamic;
+	pthread_mutex_t lock;
 } str;
 
 
-/* FUNCTIONS -> */
-str	*str_init(void);
-int	str_add(str *self, const char *_data);
-int  	str_input(str *self);
-void    str_print(const str *self);
-void    str_free(str *self);
-int     str_pop_back(str *self, char sep);
-size_t  str_get_size(const str *self);
-void    str_clear(str *self);
-int	str_rem_word(str *self, const char *needle);
-const char *str_get_data(const str *self);
-int str_add_input(str *self);
-int str_to_upper(str *self);
-int str_to_lower(str *self);
-char* get_dyn_input(size_t max_str_size);
-int str_swap_word(str *self, const char *word1, const char *word2);
-int str_to_title_case(str *self);
-int str_reverse(str *self);
-
-/* <- FUNCTIONS */
-
+/*		FUNCTIONS -->		*/
+/*
+ * str_init - Initialize a new Str structure
+ *
+ * This function allocates and initializes a new Str structure. It sets the
+ * is_dynamic flag to 1 and initializes the mutex. The caller is responsible
+ * for freeing the allocated memory using str_free().
+ *
+ * Return: Pointer to the newly allocated Str structure, or NULL if memory
+ * allocation fails.
+ */
+str *str_init(void);
 
 
 /*
- * str_init() - Initializes a new Str structure.
+ * str_add - Add a string to the Str structure
  *
- * This function initializes a new Str structure and allocates memory for it.
- * The caller is responsible for freeing the returned structure using str_free().
- * 
- * Returns:
- *     A pointer to the newly initialized Str structure, or NULL if memory allocation fails.
+ * @self: Pointer to the Str structure
+ * @_data: Pointer to the string to be added
+ *
+ * This function appends the given string @_data to the existing data in
+ * the Str structure. If the data is already present, it reallocates
+ * memory to accommodate the new string. Ensures thread safety with
+ * mutex locks. Returns 0 on success or a negative error code on failure.
  */
+int str_add(str *self, const char *_data);
+
+
+/*
+ * str_input - Read a string from standard input into the Str structure.
+ *
+ * @self: Pointer to the Str structure where the input will be stored.
+ *
+ * This function reads a line of input from standard input (stdin) and
+ * stores it in the Str structure. It allocates memory dynamically for
+ * the input string. Thread safety is ensured by locking the mutex. If
+ * there is already data present in the structure, it will return an error.
+ * Returns 0 on success, or -1 if an error occurs.
+ *
+ * Return: 0 on success, or -1 on failure.
+ */
+int str_input(str *self);
+
+
+/*
+ * str_print - Print the string data to standard output.
+ *
+ * @self: Pointer to the Str structure containing the data to print.
+ *
+ * This function prints the string data stored in the Str structure to
+ * standard output (stdout). It acquires a mutex lock to ensure thread safety
+ * while accessing the data. If the Str structure or its data is NULL, nothing
+ * will be printed.
+ */
+void str_print(str *self);
+
+
+/*
+ * str_free - Free the Str structure and its resources.
+ *
+ * @self: Pointer to the Str structure to be freed.
+ *
+ * This function releases all memory allocated for the Str structure,
+ * including the string data and the structure itself if it was dynamically
+ * allocated. Ensures thread safety by locking the mutex during the cleanup
+ * process. If the Str structure or its data is NULL, nothing is done.
+ */
+void str_free(str *self);
+
+
+/*
+ * str_pop_back - Remove the trailing portion of the string after the last
+ * occurrence of a separator.
+ *
+ * @self: Pointer to the Str structure from which the data will be modified.
+ * @sep: Separator character after which data will be removed.
+ *
+ * This function trims the string data in the Str structure by removing
+ * the portion of the string following the last occurrence of the specified
+ * separator character. Thread safety is ensured by using mutex locking.
+ * Returns 0 on success, or a negative error code if an error occurs.
+ *
+ * Return: 0 on success, or a negative error code on failure.
+ */
+int str_pop_back(str *self, char sep);
+
+
+/*
+ * str_get_size - Get the length of the string in the Str structure.
+ *
+ * @self: Pointer to the Str structure whose string length is queried.
+ *
+ * This function returns the length of the string data stored in the Str
+ * structure. If the structure or its data is NULL, it returns 0.
+ *
+ * Return: Length of the string, or 0 if the Str structure or data is NULL.
+ */
+size_t  str_get_size(const str *self);
+
+
+/*
+ * str_clear - Clear the string data from the Str structure.
+ *
+ * @self: Pointer to the Str structure whose data will be cleared.
+ *
+ * This function deallocates the memory used for the string data in the
+ * Str structure and sets the data pointer to NULL. Thread safety is ensured
+ * through mutex locking. If the Str structure itself is NULL, no action is
+ * taken.
+ */
+void str_clear(str *self);
+
+
+/*
+ * str_rem_word - Remove all occurrences of a word from the string.
+ *
+ * @self: Pointer to the Str structure from which the word will be removed.
+ * @needle: The word to remove from the string.
+ *
+ * This function removes all occurrences of the specified word from the
+ * string data stored in the Str structure. Adjusts memory allocation as
+ * necessary. Mutex locking is used to ensure thread safety. Returns 0 on
+ * success, or a negative error code if an error occurs.
+ *
+ * Return: 0 on success, or a negative error code on failure.
+ */
+int str_rem_word(str *self, const char *needle);
+
+
+/*
+ * str_get_data - Retrieve the current string data from the Str structure.
+ *
+ * @self: Pointer to the Str structure from which to retrieve the data.
+ *
+ * This function returns a pointer to the string data stored within the
+ * Str structure. If the Str structure or its data is NULL, the function
+ * returns NULL. The caller should not modify the returned string directly
+ * as it is managed by the Str structure. If modifications are needed,
+ * use the appropriate functions provided by the Str API.
+ *
+ * Return: Pointer to the string data stored in the Str structure, or NULL
+ *         if the Str structure or its data is NULL.
+ */
+const char *str_get_data(const str *self);
+
+
+/*
+ * str_add_input - Append a line of input to existing string data.
+ *
+ * @self: Pointer to the Str structure where the input will be appended.
+ *
+ * This function reads a line of input from standard input (stdin) and appends
+ * it to the existing string data within the Str structure. If there is no
+ * existing data, it initializes the data with the new input. If there is
+ * existing data, it reallocates memory to accommodate the new input and
+ * appends it. Ensures thread safety with mutex locking. Returns 0 on success,
+ * or a negative error code if any issue arises during input handling or memory
+ * allocation.
+ *
+ * Return: 0 on success, or a negative error code on failure.
+ */
+int str_add_input(str *self);
+
+
+/*
+ * str_to_upper - Convert the entire string to uppercase.
+ *
+ * @self: Pointer to the Str structure containing the string to convert.
+ *
+ * This function transforms all lowercase characters in the string data
+ * to uppercase. Thread safety is maintained through mutex locking. If
+ * the Str structure or its data is NULL, returns -1.
+ *
+ * Return: 0 on success, or -1 if the Str structure or data is NULL.
+ */
+int str_to_upper(str *self);
+
+
+/*
+ * str_to_lower - Convert the entire string to lowercase.
+ *
+ * @self: Pointer to the Str structure containing the string to convert.
+ *
+ * This function transforms all uppercase characters in the string data
+ * to lowercase. Mutex locking is used to ensure thread safety. Returns 0
+ * on success, or -1 if the Str structure or data is NULL.
+ *
+ * Return: 0 on success, or -1 if the Str structure or data is NULL.
+ */
+int str_to_lower(str *self);
+
+
+/*
+ * get_dyn_input - Read a line of input from stdin with dynamic allocation.
+ *
+ * @max_str_size: The maximum size of the input string to read.
+ *
+ * This function reads a line of input from the standard input (stdin), dynamically
+ * allocating memory as needed to accommodate the input. It grows the buffer in chunks
+ * if necessary to handle larger inputs. The function ensures that the total size of
+ * the buffer does not exceed the specified maximum size. After reading the input, it
+ * copies the buffer to a new memory location and returns it, freeing the original
+ * buffer. Returns a pointer to the newly allocated string or NULL if an error occurs.
+ *
+ * Return: Pointer to the dynamically allocated input string, or NULL on failure.
+ */
+char* get_dyn_input(size_t max_str_size);
+
+
+/*
+ * str_swap_word - Swap occurrences of two words in the string.
+ *
+ * @self: Pointer to the Str structure where the words will be swapped.
+ * @word1: The word to be replaced.
+ * @word2: The word to replace word1 with.
+ *
+ * This function replaces all occurrences of word1 in the string with word2.
+ * Handles memory allocation and ensures thread safety with mutex locking.
+ * Returns 0 on success, or a negative error code if an error occurs.
+ *
+ * Return: 0 on success, or a negative error code on failure.
+ */
+int str_swap_word(str *self, const char *word1, const char *word2);
+
+
+/*
+ * str_to_title_case - Convert the string to title case.
+ *
+ * @self: Pointer to the Str structure containing the string to modify.
+ *
+ * This function converts the string data to title case, where the first
+ * letter of each word is capitalized and the remaining letters are in
+ * lowercase. Mutex locking ensures thread safety. Returns 0 on success,
+ * or -1 if the Str structure or its data is NULL or empty.
+ *
+ * Return: 0 on success, or -1 if the Str structure or data is NULL or empty.
+ */
+int str_to_title_case(str *self);
+
+
+/*
+ * str_reverse - Reverse the string in the Str structure.
+ *
+ * @self: Pointer to the Str structure containing the string to reverse.
+ *
+ * This function reverses the entire string data stored in the Str structure.
+ * Ensures thread safety by locking the mutex. Returns 0 on success, or -1
+ * if the Str structure or its data is NULL, or if the string is empty.
+ *
+ * Return: 0 on success, or -1 if the Str structure or data is NULL or empty.
+ */
+int str_reverse(str *self);
+
+
+/*
+ * str_is_empty - Check if the Str structure's string is empty.
+ *
+ * @self: Pointer to the Str structure to check.
+ *
+ * This function checks whether the string data in the Str structure is
+ * either NULL or has zero length. Returns true if the string is empty,
+ * false otherwise.
+ *
+ * Return: true if the string is empty or NULL, false otherwise.
+ */
+bool str_is_empty(str *self);
+/* 	<--FUNCTIONS		*/
+
+
 str *str_init(void)
 {
 	str *tmp = (str *)calloc(1, sizeof(str));
@@ -63,27 +347,17 @@ str *str_init(void)
 		return NULL;
 
 	tmp->is_dynamic = 1;
+	pthread_mutex_init(&tmp->lock, NULL);
 	return tmp;
 }
 
 
-/*
- * str_add() - Adds a string to the data member of a Str structure.
- * @self: Pointer to the Str structure.
- * @_data: Pointer to the string to be added.
- *
- * This function adds the string @_data to the data member of the Str structure @self.
- * If @self->data is not empty, @_data is appended with a space at the end.
- * 
- * Returns:
- *     0 on successful completion
- *    -1 if @self or @_data is NULL, or if memory allocation fails
- */
 int str_add(str *self, const char *_data)
 {
 	if (self == NULL || _data == NULL)
 		return -EINVAL;
 
+	pthread_mutex_lock(&self->lock);
 	size_t size = strlen(_data);
 
 	if (self->data != NULL) {
@@ -93,157 +367,172 @@ int str_add(str *self, const char *_data)
 		if (p) {
 			self->data = p;
 		} else {
+			pthread_mutex_unlock(&self->lock);
 			return -ENOMEM;
 		}
 		strcat(self->data, _data);
-		return 0;
 	} else {
 		self->data = (char *)malloc((size + 1) * sizeof(char));
 		if (!self->data) {
-			return -ENOMEM;
+			pthread_mutex_unlock(&self->lock);
+			return -1;
 		}
 		strcpy(self->data, _data);
 		if (strlen(self->data) != strlen(_data)) {
+			pthread_mutex_unlock(&self->lock);
 			return -1;
 		}
 	}
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
-/*
- * str_input() - Adds a string from the terminal to the data member of a Str structure.
- * @self: Pointer to the Str structure.
- *
- * This function adds a string received from the terminal to the data member of the Str structure @self.
- * If @self->data is not empty, the received value is appended with a space.
- * 
- * Returns:
- *     0 on successful completion
- */
 int str_input(str *self)
 {
-	if (self == NULL || self->data != NULL)
+	if (self == NULL) {
 		return -1;
-
+	} else if(self->data != NULL) {
+		return -1;
+	}
+	
+	pthread_mutex_lock(&self->lock);
 	self->data = get_dyn_input(MAX_STRING_SIZE);
+	pthread_mutex_unlock(&self->lock);
 	return (self->data ? 0 : -1);
 }
 
 
 int str_add_input(str *self)
 {
-	if (self == NULL)
+	if (!self) {
 		return -1;
+	} 
 
-	if (self->data == NULL) {
+	pthread_mutex_lock(&self->lock);
+
+	if (!self->data) {
 		self->data = get_dyn_input(MAX_STRING_SIZE);
 		
 		if (self->data == NULL) {
+			pthread_mutex_unlock(&self->lock);
 			return -2;
 		}
+		pthread_mutex_unlock(&self->lock);
 		return 0;
 	}
 
-	char *buf = get_dyn_input(MAX_STRING_SIZE - strlen(self->data));
-	if (!buf)
-		return -3;
+	char *self_data_ptr = self->data;
+	size_t self_data_size = strlen(self_data_ptr);
 
-	char *new_data = (char *)realloc(self->data, (strlen(self->data) + strlen(buf) + 1));
-	if (!new_data)
-		return -4;
+	char *buf = get_dyn_input(MAX_STRING_SIZE - self_data_size);
+	if (!buf) {
+		pthread_mutex_unlock(&self->lock);
+		return -1;
+	}
 
-	self->data = new_data;
-	strncat(self->data, buf, strlen(buf));
+	char *new_data = (char *)realloc(self_data_ptr, (self_data_size + strlen(buf) + 1));
+	if (!new_data) {
+		pthread_mutex_unlock(&self->lock);
+		return -1;
+	}
+
+	self_data_ptr = new_data;
+	strncat(self_data_ptr, buf, strlen(buf));
 
 	free(buf);
+	self->data = self_data_ptr;
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
-/*
- * str_pop_back() - Removes the last character from the string in a Str structure.
- * @self: Pointer to the Str structure.
- * @sep: Separator character to be removed.
- *
- * This function removes the last occurrence of the separator character @sep 
- * from the string in the Str structure @self->data. If @self->data is empty or 
- * does not contain @sep, the function fails with -1.
- * 
- * Returns:
- *     0 on successful completion
- *    -1 if @self->data is NULL or empty, or if @sep is not found
- */
 int str_pop_back(str *self, char sep)
 {
-	if (self->data == NULL || strlen(self->data) == 0)
-		return -EINVAL;
+	if (self == NULL) {
+		return -1;
+	} else if (self->data == NULL) {
+		return -1;
+	} else if (strlen(self->data) == 0) {
+		return -1;
+	}
+
+	pthread_mutex_lock(&self->lock);
 
 	char *p = strrchr(self->data, sep);
-	if (!p)
+	if (!p) {
+		pthread_mutex_unlock(&self->lock);
 		return -EINVAL;
+	}
+
 	p++;
 	*p = '\0';
 
 	char *self_data_ptr = (char *)realloc(self->data, strlen(self->data) + 1); // Trim memory
-	if (!self_data_ptr)
-		return -ENOMEM;
+	if (!self_data_ptr) {
+		pthread_mutex_unlock(&self->lock);
+		return -1;
+	}
 	
 	self->data = self_data_ptr;
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
-/*
- * If @self->data is not empty, it prints the value in it to the terminal.
- */
-void str_print(const str *self)
+void str_print(str *self)
 {
-	if (self->data) {
-		printf("%s", self->data);
-		fflush(stdout);
+	if (self) {
+		pthread_mutex_lock(&self->lock);
+		if (self->data) {
+			printf("%s", self->data);
+			fflush(stdout);
+		}
+		pthread_mutex_unlock(&self->lock);
 	}
 }
 
 
-/*
- * If @self->data is not empty, it returns the number of characters in it.
- * @self: The struct that contains our return value.
- */
+
 size_t str_get_size(const str *self)
 {
-    	return (self->data ? strlen(self->data) : 0);
-}
-
-
-/*
- * If the 'data' member of the @self parameter is not empty,
- * it returns the 'data' member as 'const char *'.
- */
-const char *str_get_data(const str *self)
-{
-    	return (const char *)self->data;
-}
-
-
-/*
- * It only releases @self->data. It does not delete @self;
- */
-void str_clear(str *self)
-{
-	if (self->data) {
-		free(self->data);
-		self->data = NULL;
+	if (self) {
+    		return (self->data ? strlen(self->data) : 0);
+	} else {
+		return 0;
 	}
 }
 
 
-/*
- * It releases @str.
- */
+const char *str_get_data(const str *self)
+{
+	if (self) {
+		if (self->data) {
+    			return (const char *)self->data;
+		} else {
+			return NULL;
+		}
+	}
+}
+
+
+void str_clear(str *self)
+{
+	if (self){
+		pthread_mutex_lock(&self->lock);
+		if (self->data) {
+			free(self->data);
+			self->data = NULL;
+		}
+		pthread_mutex_unlock(&self->lock);
+	}
+}
+
+
 void str_free(str *self)
 {
-	if (self) { // Check NULL
+	if (self) {
+		pthread_mutex_lock(&self->lock);
 		if (self->data) {
 			free(self->data);
 			self->data = NULL;
@@ -252,23 +541,11 @@ void str_free(str *self)
 			free(self);
 			self = NULL;
 		}
+		pthread_mutex_unlock(&self->lock);
 	}
 }
 
 
-/*
- * get_dyn_input() - Dynamically reads input from the terminal.
- * @max_str_size: Maximum size of the input string to be read.
- *
- * This function dynamically reads input from the terminal, allocating memory as needed.
- * It continues reading characters until EOF or newline ('\n') is encountered, dynamically 
- * resizing the memory buffer as necessary. The caller is responsible for freeing the 
- * returned buffer.
- * 
- * Returns:
- *     A dynamically allocated buffer containing the input string read from the terminal,
- *     or NULL if memory allocation fails or EOF is encountered before any characters are read.
- */
 char* get_dyn_input(size_t max_str_size)
 {
 	const int CHUNK_SIZE = 10;
@@ -317,37 +594,29 @@ char* get_dyn_input(size_t max_str_size)
 }
 
 
-/*
- * str_rem_word() - Removes a specific word from the string.
- * @self: Pointer to the Str structure.
- * @needle: The word to be removed from @self->data.
- *
- * This function removes the specific word @needle from @self->data. 
- * If @needle cannot be found, the function fails with -1.
- * 
- * Returns:
- *     0 on successful completion
- *    -1 if @self, @self->data, or @needle is NULL, or if @needle cannot be found
- *
- * Note: This function is designed to manage dynamic memory governed by the 
- * @self->is_dynamic property. The caller is responsible for freeing 
- * the returned data to continue accessing the modified data.
- */
 int str_rem_word(str *self, const char *needle)
 {
-        if (!self && !self->data && !needle)
-        	return -EINVAL;
-            
+	if (!self) {
+		return -1;
+	} else if (!self->data || !needle) {
+		return -1;
+	} 
+        
+	pthread_mutex_lock(&self->lock);
         size_t self_data_size = strlen(self->data);
         size_t needle_size = strlen(needle);
         
-        if (needle_size > self_data_size)
+        if (needle_size > self_data_size) {
+		pthread_mutex_unlock(&self->lock);
         	return -EINVAL;
+	}
             
         char *L = NULL;
         L = strstr(self->data, needle);
-        if(!L)
+        if(!L) {
+		pthread_mutex_unlock(&self->lock);
         	return -EINVAL;
+	}
 
         memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
 	self->data[self_data_size - needle_size] = '\0';
@@ -355,50 +624,45 @@ int str_rem_word(str *self, const char *needle)
         char *buf = (char*)realloc(self->data, 
                 ((self_data_size - needle_size)) +1);
         
-	if (!buf)	// realloc başarısız oldu; ancak kelime diziden kaldırıldı ve sonuna NULL eklendi
-		return -ENOMEM;
+	if (!buf) {	// realloc başarısız oldu; ancak kelime diziden kaldırıldı ve sonuna NULL eklendi
+		pthread_mutex_unlock(&self->lock);
+		return -1;
+	}
 
         if (buf)
         	self->data = buf;
 
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
-/*
- * str_swap_word() - Replaces a specific word with another word.
- * @self: Pointer to the Str structure.
- * @word1: The word to be replaced.
- * @word2: The new word to replace @word1.
- *
- * This function replaces the specific word @word1 found in @self->data 
- * with @word2. If @word1 cannot be found, the function fails with -1.
- * 
- * Returns:
- *     0 on successful completion
- *    -1 if an error occurred
- *
- * Note: This function is designed to manage dynamic memory governed by the 
- * @self->is_dynamic property. The caller is responsible for freeing 
- * the returned data to continue accessing the modified data.
- */
 int str_swap_word(str *self, const char *word1, const char *word2)
 {
-	if (!self && !self->data && !self->is_dynamic && !word1 && !word2)
+	if (!self) {
 		return -1;
+	} else if (!self->data || !self->is_dynamic || !word1 || !word2) {
+		return -1;
+	}
+
+	pthread_mutex_lock(&self->lock);
 
 	size_t self_data_size = strlen(self->data);
 	size_t word1_size = strlen(word1);
 	size_t word2_size = strlen(word2);
 
 	char *L = strstr(self->data, word1);
-	if (!L)
+	if (!L) {
+		pthread_mutex_unlock(&self->lock);
 		return -1;
+	}
 
 	size_t new_size = self_data_size - word1_size + word2_size;
 	char *buf = (char *)malloc(sizeof(char) * (new_size + 1)); // +1 for null terminator
-	if (!buf)
+	if (!buf) {
+		pthread_mutex_unlock(&self->lock);
 		return -1;
+	}
 
 	// Copy everything before word1
 	strncpy(buf, self->data, L - self->data);
@@ -413,14 +677,19 @@ int str_swap_word(str *self, const char *word1, const char *word2)
 	free(self->data);
 	self->data = buf;
 
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
 int str_to_upper(str *self)
 {
-	if (self == NULL || self->data == NULL)
+	if (self == NULL) {
 		return -1;
+	} else if (!self->data) {
+		return -1;
+	}
+	pthread_mutex_lock(&self->lock);
 
 	char *p = self->data;
 	while (*p) {
@@ -428,30 +697,42 @@ int str_to_upper(str *self)
 			*p &= ~(1 << 5);
 		p++;
 	}
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
 int str_to_lower(str *self)
 {
-	if (!self && !self->data)
+	if (!self) {
 		return -1;
+	} else if (!self->data) {
+		return -1;
+	}
 	
+	pthread_mutex_lock(&self->lock);
 	char *p = self->data;
 	while (*p) {
 		if ((*p >= 'A') && (*p <= 'Z'))
 			*p |= (1 << 5); // yes, faster than tolower :/
 		p++;
 	}
+
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 
 int str_to_title_case(str *self)
 {
-	if (!self || !self->data || strlen(self->data) == 0)
+	if (!self) {
 		return -1;
+	} else if (!self->data || !strlen(self->data)) {
+		return -1;
+	}
 	
+	pthread_mutex_lock(&self->lock);
+
 	char *p = self->data;
 	short flag = 1;
 
@@ -462,30 +743,51 @@ int str_to_title_case(str *self)
 		} else if (*p == ' ') {
 			flag = 1;
 		}
+		p++;
 	}
+
+	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
 
 int str_reverse(str *self)
 {
-    if (!self || !self->data)
-        return -EINVAL;
-    if (strlen(self->data) == 0)
-        return -EINVAL;
+	if (!self) {
+		return -1;
+	} else if (!self->data) {
+		return -1;
+	} else if (!strlen(self->data)) {
+		return -1;
+	}
     
-    char buf;
-    char *data = self->data;
-    size_t head = 0;
-    size_t tail = strlen(self->data) - 1;
+	pthread_mutex_lock(&self->lock);
+	char buf;
+	char *data = self->data;
+	size_t head = 0;
+	size_t tail = strlen(self->data) - 1;
 
-    while (head < tail) {
-        buf = data[head];
-        data[head] = data[tail];
-        data[tail] = buf;
-        head++;
-        tail--;
-    }
-    return 0;
+	while (head < tail) {
+		buf = data[head];
+		data[head] = data[tail];
+		data[tail] = buf;
+		head++;
+		tail--;
+	}
+
+	pthread_mutex_unlock(&self->lock);
+	return 0;
 }
 
+bool str_is_empty(str *self)
+{
+	if (self){
+		if (self->data == NULL){
+			return true;
+		} else if (strlen(self->data) == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
 #endif /* _XSTRING_H_ */
