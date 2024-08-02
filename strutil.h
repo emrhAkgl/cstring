@@ -533,7 +533,6 @@ void str_clear(str *self)
 void str_free(str *self)
 {
 	if (self) {
-		pthread_mutex_lock(&self->lock);
 		if (self->data) {
 			free(self->data);
 			self->data = NULL;
@@ -541,8 +540,8 @@ void str_free(str *self)
 		if (self->is_dynamic) {
 			free(self);
 			self = NULL;
+			pthread_mutex_destroy(&self->lock);
 		}
-		pthread_mutex_unlock(&self->lock);
 	}
 }
 
