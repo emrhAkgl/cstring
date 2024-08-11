@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "strutil.h"
 
 
@@ -17,11 +18,9 @@
 #define FINISH_MSG(s, TEST_NAME) do {			\
 	str_clear(s);					\
 	printf("\033[1;32mTest %d %s passed\033[0m\n", 	\
-		test_count++, #TEST_NAME);		\
+		__COUNTER__ + 1, #TEST_NAME);		\
 	fflush(stdout);					\
 } while (0)
-
-unsigned int test_count = 1;
 
 
 /*	FUNCTIONS	*/
