@@ -101,6 +101,13 @@ to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
+## Disclaimer
+
+This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, or non-infringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+
+## Usage Risks
+
+Please be aware that this software may contain bugs, security vulnerabilities, or other issues. It is your responsibility to test and validate the software before using it in any critical or production environment. The authors do not assume any responsibility for any issues that may arise from the use of this software.
 
 ## License
 
