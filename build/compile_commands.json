@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/workspaces/strutil/build",
+  "command": "/usr/bin/cc  -I/workspaces/strutil/src  -g   -o CMakeFiles/run_tests.dir/test/test.c.o   -c /workspaces/strutil/test/test.c",
+  "file": "/workspaces/strutil/test/test.c"
+},
+{
+  "directory": "/workspaces/strutil/build",
+  "command": "/usr/bin/cc  -I/workspaces/strutil/src  -g   -o CMakeFiles/my_library.dir/src/main.c.o   -c /workspaces/strutil/src/main.c",
+  "file": "/workspaces/strutil/src/main.c"
+},
+{
+  "directory": "/workspaces/strutil/build",
+  "command": "/usr/bin/cc  -I/workspaces/strutil/src  -g   -o CMakeFiles/my_executable.dir/src/main.c.o   -c /workspaces/strutil/src/main.c",
+  "file": "/workspaces/strutil/src/main.c"
+}
+]

@@ -41,8 +41,8 @@
  */
 
 
-#ifndef _STRUTIL_H_
-#define _STRUTIL_H_
+#if !_STRUTIL_H_
+#define _STRUTIL_H_ 1
 
 /*    HEADERS    */
 #include <stdio.h>
@@ -341,6 +341,10 @@ bool str_is_empty(str *self);
 /* 	<--FUNCTIONS		*/
 
 
+static char *str_copy(char *dest, const char *source);
+static char *str_concat(char *dest, const char *source);
+static size_t str_length(const char *s);
+
 str *str_init(void)
 {
 	str *tmp = (str *)calloc(1, sizeof(str));
@@ -355,35 +359,40 @@ str *str_init(void)
 
 int str_add(str *self, const char *_data)
 {
-	if (self == NULL || _data == NULL)
+	if (!self || !_data)
 		return -EINVAL;
 
 	pthread_mutex_lock(&self->lock);
-	size_t size = strlen(_data);
+	size_t size = str_length(_data);
 
 	if (self->data != NULL) {
-		size += strlen(self->data);
+		size += str_length(self->data);
 
 		char *p = (char *)realloc(self->data, (size + 1));
-		if (p) {
-			self->data = p;
-		} else {
+		if (!p) {
 			pthread_mutex_unlock(&self->lock);
 			return -ENOMEM;
 		}
-		strcat(self->data, _data);
+
+		self->data = p;	
+		str_concat(self->data, _data);
 	} else {
 		self->data = (char *)malloc((size + 1) * sizeof(char));
 		if (!self->data) {
 			pthread_mutex_unlock(&self->lock);
 			return -1;
 		}
-		strcpy(self->data, _data);
+
+		if (str_copy(self->data, _data) != self->data) {
+			pthread_mutex_unlock(&self->lock);
+			return -1;
+		}
 		if (strlen(self->data) != strlen(_data)) {
 			pthread_mutex_unlock(&self->lock);
 			return -1;
 		}
 	}
+
 	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
@@ -408,7 +417,7 @@ int str_add_input(str *self)
 {
 	if (!self) {
 		return -1;
-	} 
+	}
 
 	pthread_mutex_lock(&self->lock);
 
@@ -561,7 +570,7 @@ char* get_dyn_input(size_t max_str_size)
 	while ((c = getchar()) != EOF && c != '\n') {
 		if (length + 1 >= current_size) { // Expand memory
 			current_size += CHUNK_SIZE;			
-			char* tmp = realloc(buffer, current_size);
+			char* tmp = (char *)realloc(buffer, current_size);
 
 			if (tmp == NULL) {
 				free(buffer);
@@ -637,42 +646,44 @@ int str_rem_word(str *self, const char *needle)
 }
 
 
-int str_swap_word(str *self, const char *word1, const char *word2)
+int str_swap_word(str *self, const char *old_word, const char *new_word)
 {
-	if (!self) {
+	if (!self)
 		return -1;
-	} else if (!self->data || !self->is_dynamic || !word1 || !word2) {
+	if (!self->data || !old_word || !new_word)
 		return -1;
-	}
 
 	pthread_mutex_lock(&self->lock);
 
-	size_t self_data_size = strlen(self->data);
-	size_t word1_size = strlen(word1);
-	size_t word2_size = strlen(word2);
+	size_t self_data_size = str_length(self->data);
+	size_t old_word_size = str_length(old_word);
+	size_t new_word_size = str_length(new_word);
+	size_t result_length = 0;
+	char *old_word_pos = NULL;
+	char *buf = NULL;
 
-	char *L = strstr(self->data, word1);
-	if (!L) {
+	old_word_pos = strstr(self->data, old_word);
+	if (!old_word_pos) {
 		pthread_mutex_unlock(&self->lock);
 		return -1;
 	}
 
-	size_t new_size = self_data_size - word1_size + word2_size;
-	char *buf = (char *)malloc(sizeof(char) * (new_size + 1)); // +1 for null terminator
+	result_length = self_data_size - old_word_size + new_word_size;
+	buf = (char *)malloc(sizeof(char) * (result_length + 1)); // +1 for null terminator
 	if (!buf) {
 		pthread_mutex_unlock(&self->lock);
 		return -1;
 	}
 
 	// Copy everything before word1
-	strncpy(buf, self->data, L - self->data);
-	buf[L - self->data] = '\0'; // Null terminate the buffer
+	strncpy(buf, self->data, old_word_pos - self->data);
+	buf[old_word_pos - self->data] = '\0'; // Null terminate the buffer
 
 	// Copy word2
-	strcat(buf, word2);
+	str_concat(buf, new_word);
 
 	// Copy everything after word1
-	strcat(buf, L + word1_size);
+	str_concat(buf, old_word_pos + old_word_size);
 
 	free(self->data);
 	self->data = buf;
@@ -727,7 +738,7 @@ int str_to_title_case(str *self)
 {
 	if (!self) {
 		return -1;
-	} else if (!self->data || !strlen(self->data)) {
+	} else if (!self->data || !str_length(self->data)) {
 		return -1;
 	}
 	
@@ -756,7 +767,7 @@ int str_reverse(str *self)
 		return -1;
 	} else if (!self->data) {
 		return -1;
-	} else if (!strlen(self->data)) {
+	} else if (!str_length(self->data)) {
 		return -1;
 	}
     
@@ -764,7 +775,7 @@ int str_reverse(str *self)
 	char buf;
 	char *data = self->data;
 	size_t head = 0;
-	size_t tail = strlen(self->data) - 1;
+	size_t tail = str_length(self->data) - 1;
 
 	while (head < tail) {
 		buf = data[head];
@@ -783,11 +794,51 @@ bool str_is_empty(str *self)
 	if (self){
 		if (self->data == NULL){
 			return true;
-		} else if (strlen(self->data) == 0) {
+		} else if (str_length(self->data) == 0) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 }
+
+
+static char *str_copy(char *dest, const char *source)
+{
+	if (!dest || !source)
+		return NULL;
+
+	char *p = dest;
+	while((*p++ = *source++) != '\0')
+		/* smile :) */;
+	
+	return dest;
+}
+
+static char *str_concat(char *dest, const char *source)
+{
+	if (!dest || !source)
+		return NULL;
+
+	char *p = dest;
+	while (*p)
+		p++;
+	while ((*p = *source++) != '\0')
+		p++;
+	
+	return dest;
+}
+
+static size_t str_length(const char *s)
+{
+	if (!s)
+		return 0;
+
+	size_t length = 0;
+	while(*s++)
+		length++;
+
+	return length;
+}
+
 #endif /* _XSTRING_H_ */

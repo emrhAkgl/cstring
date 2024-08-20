@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/run_tests.dir/test/test.c.o  -o run_tests  libmy_library.a 

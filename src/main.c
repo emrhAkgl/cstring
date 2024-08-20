@@ -40,6 +40,13 @@ int main (void)
 		//Emrah Vlad Celil.
 	}
 
+	res = 0;
+	res = str_swap_word(names, "Celil", "Nazmiye");
+	if (res) {
+		fprintf(stderr, "str_swap returned -1\n");
+	}
+
+	printf("result of main : %s\n", str_get_data(names));
 	str_free(names);
 	return 0;
 }

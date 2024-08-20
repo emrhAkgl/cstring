@@ -1,0 +1,5 @@
+/workspaces/strutil/build/CMakeFiles/rebuild_cache.dir
+/workspaces/strutil/build/CMakeFiles/edit_cache.dir
+/workspaces/strutil/build/CMakeFiles/run_tests.dir
+/workspaces/strutil/build/CMakeFiles/my_library.dir
+/workspaces/strutil/build/CMakeFiles/my_executable.dir
