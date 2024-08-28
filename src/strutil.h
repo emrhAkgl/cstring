@@ -360,7 +360,7 @@ str *str_init(void)
 int str_add(str *self, const char *_data)
 {
 	if (!self || !_data)
-		return -EINVAL;
+		return -1;
 
 	pthread_mutex_lock(&self->lock);
 	size_t size = str_length(_data);
@@ -377,17 +377,15 @@ int str_add(str *self, const char *_data)
 		self->data = p;	
 		str_concat(self->data, _data);
 	} else {
-		self->data = (char *)malloc((size + 1) * sizeof(char));
+		self->data = (char *)malloc((size + 1));
 		if (!self->data) {
 			pthread_mutex_unlock(&self->lock);
 			return -1;
 		}
 
 		if (str_copy(self->data, _data) != self->data) {
-			pthread_mutex_unlock(&self->lock);
-			return -1;
-		}
-		if (strlen(self->data) != strlen(_data)) {
+			free(self->data);
+			self->data = NULL;
 			pthread_mutex_unlock(&self->lock);
 			return -1;
 		}
@@ -558,8 +556,7 @@ void str_free(str *self)
 char* get_dyn_input(size_t max_str_size)
 {
 	const int CHUNK_SIZE = 10;
-	char* buffer = (char *)calloc(CHUNK_SIZE,  sizeof(char));
-
+	char* buffer = (char *)malloc(CHUNK_SIZE);
 	if (buffer == NULL) 
 		return NULL;
 
@@ -570,12 +567,13 @@ char* get_dyn_input(size_t max_str_size)
 	while ((c = getchar()) != EOF && c != '\n') {
 		if (length + 1 >= current_size) { // Expand memory
 			current_size += CHUNK_SIZE;			
-			char* tmp = (char *)realloc(buffer, current_size);
 
+			char* tmp = (char *)realloc(buffer, current_size);
 			if (tmp == NULL) {
 				free(buffer);
 				return NULL;
 			}
+
 			buffer = tmp;
 		}
 
@@ -715,11 +713,10 @@ int str_to_upper(str *self)
 
 int str_to_lower(str *self)
 {
-	if (!self) {
+	if (!self)
 		return -1;
-	} else if (!self->data) {
+	if (!self->data)
 		return -1;
-	}
 	
 	pthread_mutex_lock(&self->lock);
 	char *p = self->data;
@@ -736,11 +733,10 @@ int str_to_lower(str *self)
 
 int str_to_title_case(str *self)
 {
-	if (!self) {
+	if (!self)
 		return -1;
-	} else if (!self->data || !str_length(self->data)) {
+	if (!self->data || !str_length(self->data))
 		return -1;
-	}
 	
 	pthread_mutex_lock(&self->lock);
 
@@ -763,17 +759,15 @@ int str_to_title_case(str *self)
 
 int str_reverse(str *self)
 {
-	if (!self) {
+	if (!self)
 		return -1;
-	} else if (!self->data) {
+	if (!self->data)
 		return -1;
-	} else if (!str_length(self->data)) {
+	else if (!str_length(self->data))
 		return -1;
-	}
     
 	pthread_mutex_lock(&self->lock);
-	char buf;
-	char *data = self->data;
+	char buf, *data = self->data;
 	size_t head = 0;
 	size_t tail = str_length(self->data) - 1;
 
@@ -792,9 +786,9 @@ int str_reverse(str *self)
 bool str_is_empty(str *self)
 {
 	if (self){
-		if (self->data == NULL){
+		if (!self->data){
 			return true;
-		} else if (str_length(self->data) == 0) {
+		} else if (!str_length(self->data)) {
 			return true;
 		} else {
 			return false;
@@ -810,7 +804,7 @@ static char *str_copy(char *dest, const char *source)
 
 	char *p = dest;
 	while((*p++ = *source++) != '\0')
-		/* smile :) */;
+		/* :) */;
 	
 	return dest;
 }
