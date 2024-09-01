@@ -62,7 +62,7 @@
   #define STR_WARN_UNUSED_RESULT 
 #endif
 
-const size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
+const static size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
 
 
 typedef struct Str {
