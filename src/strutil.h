@@ -46,8 +46,8 @@
 
 /*    HEADERS    */
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 #include <assert.h>
 #include <errno.h>
@@ -338,12 +338,15 @@ int str_reverse(str *self);
  * Return: true if the string is empty or NULL, false otherwise.
  */
 bool str_is_empty(str *self);
-/* 	<--FUNCTIONS		*/
-
 
 static char *str_copy(char *dest, const char *source);
 static char *str_concat(char *dest, const char *source);
 static size_t str_length(const char *s);
+static int str_nconcat(char *dest, const char *src, size_t n);
+static int str_ncopy(char *dest, const char *src, size_t n);
+
+/* 	<--FUNCTIONS		*/
+
 
 str *str_init(void)
 {
@@ -430,8 +433,7 @@ int str_add_input(str *self)
 		return 0;
 	}
 
-	char *self_data_ptr = self->data;
-	size_t self_data_size = strlen(self_data_ptr);
+	size_t self_data_size = str_length(self->data);
 
 	char *buf = get_dyn_input(MAX_STRING_SIZE - self_data_size);
 	if (!buf) {
@@ -439,17 +441,26 @@ int str_add_input(str *self)
 		return -1;
 	}
 
-	char *new_data = (char *)realloc(self_data_ptr, (self_data_size + strlen(buf) + 1));
+	char *new_data = (char *)realloc(self->data, (self_data_size + str_length(buf) + 1));
 	if (!new_data) {
+		free(buf);
+		pthread_mutex_unlock(&self->lock);
+		return -1;
+	} else {
+		self->data = new_data;
+	}
+
+	if (str_nconcat(self->data, buf, strlen(buf))) {
+		char *res = (char *)realloc(self->data, self_data_size + 1);
+		if (res) {
+			self->data = res;
+		}
+		free(buf);
 		pthread_mutex_unlock(&self->lock);
 		return -1;
 	}
 
-	self_data_ptr = new_data;
-	strncat(self_data_ptr, buf, strlen(buf));
-
 	free(buf);
-	self->data = self_data_ptr;
 	pthread_mutex_unlock(&self->lock);
 	return 0;
 }
@@ -461,7 +472,7 @@ int str_pop_back(str *self, char sep)
 		return -1;
 	} else if (self->data == NULL) {
 		return -1;
-	} else if (strlen(self->data) == 0) {
+	} else if (str_length(self->data) == 0) {
 		return -1;
 	}
 
@@ -476,7 +487,7 @@ int str_pop_back(str *self, char sep)
 	p++;
 	*p = '\0';
 
-	char *self_data_ptr = (char *)realloc(self->data, strlen(self->data) + 1); // Trim memory
+	char *self_data_ptr = (char *)realloc(self->data, str_length(self->data) + 1); // Trim memory
 	if (!self_data_ptr) {
 		pthread_mutex_unlock(&self->lock);
 		return -1;
@@ -505,7 +516,7 @@ void str_print(str *self)
 size_t str_get_size(const str *self)
 {
 	if (self) {
-    		return (self->data ? strlen(self->data) : 0);
+    		return (self->data ? str_length(self->data) : 0);
 	} else {
 		return 0;
 	}
@@ -517,10 +528,9 @@ const char *str_get_data(const str *self)
 	if (self) {
 		if (self->data) {
     			return (const char *)self->data;
-		} else {
-			return NULL;
 		}
 	}
+	return NULL;
 }
 
 
@@ -588,13 +598,13 @@ char* get_dyn_input(size_t max_str_size)
 
 	// Finally release the extra memory
 	char *result = (char *)malloc((length + 1) * sizeof(char));
-	if (result == NULL) {
+	if (!result) {
 		free(buffer);
 		return NULL;
 	}
 	
-	strncpy(result, buffer, strlen(buffer));
-	result[strlen(buffer)] = '\0';
+	str_ncopy(result, buffer, str_length(buffer));
+	result[str_length(buffer)] = '\0';
 
 	free(buffer);
 	return result;
@@ -610,8 +620,8 @@ int str_rem_word(str *self, const char *needle)
 	} 
         
 	pthread_mutex_lock(&self->lock);
-        size_t self_data_size = strlen(self->data);
-        size_t needle_size = strlen(needle);
+        size_t self_data_size = str_length(self->data);
+        size_t needle_size = str_length(needle);
         
         if (needle_size > self_data_size) {
 		pthread_mutex_unlock(&self->lock);
@@ -625,7 +635,7 @@ int str_rem_word(str *self, const char *needle)
         	return -EINVAL;
 	}
 
-        memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
+    	memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
 	self->data[self_data_size - needle_size] = '\0';
         
         char *buf = (char*)realloc(self->data, 
@@ -674,7 +684,7 @@ int str_swap_word(str *self, const char *old_word, const char *new_word)
 	}
 
 	// Copy everything before word1
-	strncpy(buf, self->data, old_word_pos - self->data);
+	str_ncopy(buf, self->data, old_word_pos - self->data);
 	buf[old_word_pos - self->data] = '\0'; // Null terminate the buffer
 
 	// Copy word2
@@ -761,20 +771,20 @@ int str_reverse(str *self)
 {
 	if (!self)
 		return -1;
-	if (!self->data)
+	else if (!self->data)
 		return -1;
 	else if (!str_length(self->data))
 		return -1;
     
 	pthread_mutex_lock(&self->lock);
-	char buf, *data = self->data;
+	char buf = 0;
 	size_t head = 0;
 	size_t tail = str_length(self->data) - 1;
 
 	while (head < tail) {
-		buf = data[head];
-		data[head] = data[tail];
-		data[tail] = buf;
+		buf = self->data[head];
+		self->data[head] = self->data[tail];
+		self->data[tail] = buf;
 		head++;
 		tail--;
 	}
@@ -790,10 +800,9 @@ bool str_is_empty(str *self)
 			return true;
 		} else if (!str_length(self->data)) {
 			return true;
-		} else {
-			return false;
 		}
 	}
+	return false;
 }
 
 
@@ -809,6 +818,7 @@ static char *str_copy(char *dest, const char *source)
 	return dest;
 }
 
+
 static char *str_concat(char *dest, const char *source)
 {
 	if (!dest || !source)
@@ -817,11 +827,48 @@ static char *str_concat(char *dest, const char *source)
 	char *p = dest;
 	while (*p)
 		p++;
+
 	while ((*p = *source++) != '\0')
 		p++;
 	
 	return dest;
 }
+
+
+static int str_nconcat(char *dest, const char *src, size_t n)
+{
+	if (!dest || !src || n < 1)
+		return -1;
+	
+	size_t src_size = str_length(src);
+	if (n > src_size)
+		return -1;
+	
+	while (*dest)
+		dest++;
+
+	while (n) {
+		*dest++ = *src++;
+		n--;
+	}
+	*dest = '\0';
+
+	return 0;
+}
+
+static int str_ncopy(char *dest, const char *src, size_t n)
+{
+	if (!dest || !src || n < 1)
+		return -1;
+	
+	while (n) {
+		*dest++ = *src++;
+		n--;
+	}
+	*dest = '\0';
+	return 0;
+}
+
 
 static size_t str_length(const char *s)
 {
@@ -835,4 +882,4 @@ static size_t str_length(const char *s)
 	return length;
 }
 
-#endif /* _XSTRING_H_ */
+#endif /* _STRUTIL_H_ */
