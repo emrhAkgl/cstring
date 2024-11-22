@@ -71,6 +71,17 @@ typedef struct Str {
 	pthread_mutex_t lock;
 } str;
 
+typedef enum {
+	STR_OK = 0,
+	STR_NULL,
+	STR_INVALID,
+	STR_NOMEM,
+	STR_ERRCPY,
+	STR_MAXSIZE,
+	STR_ALLOC,
+	STR_EMPTY,
+	STR_FAIL
+}Str_err_t;
 
 /*		FUNCTIONS -->		*/
 /*
@@ -97,7 +108,7 @@ str *str_init(void);
  * memory to accommodate the new string. Ensures thread safety with
  * mutex locks. Returns 0 on success or a negative error code on failure.
  */
-int str_add(str *self, const char *_data);
+Str_err_t str_add(str *self, const char *_data);
 
 
 /*
@@ -113,7 +124,7 @@ int str_add(str *self, const char *_data);
  *
  * Return: 0 on success, or -1 on failure.
  */
-int str_input(str *self);
+Str_err_t str_input(str *self);
 
 
 /*
@@ -156,7 +167,7 @@ void str_free(str *self);
  *
  * Return: 0 on success, or a negative error code on failure.
  */
-int str_pop_back(str *self, char sep);
+Str_err_t str_pop_back(str *self, char sep);
 
 
 /*
@@ -198,7 +209,7 @@ void str_clear(str *self);
  *
  * Return: 0 on success, or a negative error code on failure.
  */
-int str_rem_word(str *self, const char *needle);
+Str_err_t str_rem_word(str *self, const char *needle);
 
 
 /*
@@ -233,7 +244,7 @@ const char *str_get_data(const str *self);
  *
  * Return: 0 on success, or a negative error code on failure.
  */
-int str_add_input(str *self);
+Str_err_t str_add_input(str *self);
 
 
 /*
@@ -247,7 +258,7 @@ int str_add_input(str *self);
  *
  * Return: 0 on success, or -1 if the Str structure or data is NULL.
  */
-int str_to_upper(str *self);
+Str_err_t str_to_upper(str *self);
 
 
 /*
@@ -261,7 +272,7 @@ int str_to_upper(str *self);
  *
  * Return: 0 on success, or -1 if the Str structure or data is NULL.
  */
-int str_to_lower(str *self);
+Str_err_t str_to_lower(str *self);
 
 
 /*
@@ -294,7 +305,7 @@ char* get_dyn_input(size_t max_str_size);
  *
  * Return: 0 on success, or a negative error code on failure.
  */
-int str_swap_word(str *self, const char *word1, const char *word2);
+Str_err_t str_swap_word(str *self, const char *word1, const char *word2);
 
 
 /*
@@ -309,7 +320,7 @@ int str_swap_word(str *self, const char *word1, const char *word2);
  *
  * Return: 0 on success, or -1 if the Str structure or data is NULL or empty.
  */
-int str_to_title_case(str *self);
+Str_err_t str_to_title_case(str *self);
 
 
 /*
@@ -323,7 +334,7 @@ int str_to_title_case(str *self);
  *
  * Return: 0 on success, or -1 if the Str structure or data is NULL or empty.
  */
-int str_reverse(str *self);
+Str_err_t str_reverse(str *self);
 
 
 /*
@@ -342,8 +353,11 @@ bool str_is_empty(str *self);
 static char *str_copy(char *dest, const char *source);
 static char *str_concat(char *dest, const char *source);
 static size_t str_length(const char *s);
-static int str_nconcat(char *dest, const char *src, size_t n);
-static int str_ncopy(char *dest, const char *src, size_t n);
+static Str_err_t str_nconcat(char *dest, const char *src, size_t n);
+static Str_err_t str_ncopy(char *dest, const char *src, size_t n);
+
+int str_check_err(Str_err_t err, const char *msg);
+
 
 /* 	<--FUNCTIONS		*/
 
@@ -360,10 +374,10 @@ str *str_init(void)
 }
 
 
-int str_add(str *self, const char *_data)
+Str_err_t str_add(str *self, const char *_data)
 {
 	if (!self || !_data)
-		return -1;
+		return STR_NULL;
 
 	pthread_mutex_lock(&self->lock);
 	size_t size = str_length(_data);
@@ -374,7 +388,7 @@ int str_add(str *self, const char *_data)
 		char *p = (char *)realloc(self->data, (size + 1));
 		if (!p) {
 			pthread_mutex_unlock(&self->lock);
-			return -ENOMEM;
+			return STR_NOMEM;
 		}
 
 		self->data = p;	
@@ -383,41 +397,41 @@ int str_add(str *self, const char *_data)
 		self->data = (char *)malloc((size + 1));
 		if (!self->data) {
 			pthread_mutex_unlock(&self->lock);
-			return -1;
+			return STR_NOMEM;
 		}
 
 		if (str_copy(self->data, _data) != self->data) {
 			free(self->data);
 			self->data = NULL;
 			pthread_mutex_unlock(&self->lock);
-			return -1;
+			return STR_ERRCPY;
 		}
 	}
 
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
-int str_input(str *self)
+Str_err_t str_input(str *self)
 {
-	if (self == NULL) {
-		return -1;
+	if (!self) {
+		return STR_NULL;
 	} else if(self->data != NULL) {
-		return -1;
+		return STR_INVALID;
 	}
 	
 	pthread_mutex_lock(&self->lock);
 	self->data = get_dyn_input(MAX_STRING_SIZE);
 	pthread_mutex_unlock(&self->lock);
-	return (self->data ? 0 : -1);
+	return (self->data ? STR_OK : STR_MAXSIZE);
 }
 
 
-int str_add_input(str *self)
+Str_err_t str_add_input(str *self)
 {
 	if (!self) {
-		return -1;
+		return STR_NULL;
 	}
 
 	pthread_mutex_lock(&self->lock);
@@ -427,10 +441,10 @@ int str_add_input(str *self)
 		
 		if (self->data == NULL) {
 			pthread_mutex_unlock(&self->lock);
-			return -2;
+			return STR_MAXSIZE;
 		}
 		pthread_mutex_unlock(&self->lock);
-		return 0;
+		return STR_OK;
 	}
 
 	size_t self_data_size = str_length(self->data);
@@ -438,42 +452,44 @@ int str_add_input(str *self)
 	char *buf = get_dyn_input(MAX_STRING_SIZE - self_data_size);
 	if (!buf) {
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return STR_ALLOC;
 	}
 
 	char *new_data = (char *)realloc(self->data, (self_data_size + str_length(buf) + 1));
 	if (!new_data) {
 		free(buf);
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return STR_ALLOC;
 	} else {
 		self->data = new_data;
 	}
 
-	if (str_nconcat(self->data, buf, strlen(buf))) {
+	int concat_res = str_nconcat(self->data, buf, strlen(buf));
+	if (concat_res != STR_OK) {
 		char *res = (char *)realloc(self->data, self_data_size + 1);
 		if (res) {
 			self->data = res;
 		}
 		free(buf);
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return concat_res;
 	}
 
 	free(buf);
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
-int str_pop_back(str *self, char sep)
+
+Str_err_t str_pop_back(str *self, char sep)
 {
 	if (self == NULL) {
-		return -1;
+		return STR_NULL;
 	} else if (self->data == NULL) {
-		return -1;
+		return STR_EMPTY;
 	} else if (str_length(self->data) == 0) {
-		return -1;
+		return STR_EMPTY;
 	}
 
 	pthread_mutex_lock(&self->lock);
@@ -481,7 +497,7 @@ int str_pop_back(str *self, char sep)
 	char *p = strrchr(self->data, sep);
 	if (!p) {
 		pthread_mutex_unlock(&self->lock);
-		return -EINVAL;
+		return STR_FAIL;
 	}
 
 	p++;
@@ -490,12 +506,12 @@ int str_pop_back(str *self, char sep)
 	char *self_data_ptr = (char *)realloc(self->data, str_length(self->data) + 1); // Trim memory
 	if (!self_data_ptr) {
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return STR_ALLOC;
 	}
 	
 	self->data = self_data_ptr;
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
@@ -611,12 +627,12 @@ char* get_dyn_input(size_t max_str_size)
 }
 
 
-int str_rem_word(str *self, const char *needle)
+Str_err_t str_rem_word(str *self, const char *needle)
 {
-	if (!self) {
-		return -1;
-	} else if (!self->data || !needle) {
-		return -1;
+	if (!self || !needle) {
+		return STR_NULL;
+	} else if (!self->data) {
+		return STR_EMPTY;
 	} 
         
 	pthread_mutex_lock(&self->lock);
@@ -625,14 +641,14 @@ int str_rem_word(str *self, const char *needle)
         
         if (needle_size > self_data_size) {
 		pthread_mutex_unlock(&self->lock);
-        	return -EINVAL;
+        	return STR_FAIL;
 	}
             
         char *L = NULL;
         L = strstr(self->data, needle);
         if(!L) {
 		pthread_mutex_unlock(&self->lock);
-        	return -EINVAL;
+        	return STR_FAIL;
 	}
 
     	memmove(L, L + needle_size, self_data_size - (L - self->data) - needle_size + 1);
@@ -643,23 +659,23 @@ int str_rem_word(str *self, const char *needle)
         
 	if (!buf) {	// realloc başarısız oldu; ancak kelime diziden kaldırıldı ve sonuna NULL eklendi
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return STR_ALLOC;
 	}
 
         if (buf)
         	self->data = buf;
 
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
-int str_swap_word(str *self, const char *old_word, const char *new_word)
+Str_err_t str_swap_word(str *self, const char *old_word, const char *new_word)
 {
-	if (!self)
-		return -1;
-	if (!self->data || !old_word || !new_word)
-		return -1;
+	if (!self || !old_word || !new_word)
+		return STR_NULL;
+	else if (!self->data )
+		return STR_EMPTY;
 
 	pthread_mutex_lock(&self->lock);
 
@@ -673,14 +689,14 @@ int str_swap_word(str *self, const char *old_word, const char *new_word)
 	old_word_pos = strstr(self->data, old_word);
 	if (!old_word_pos) {
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return STR_FAIL;
 	}
 
 	result_length = self_data_size - old_word_size + new_word_size;
 	buf = (char *)malloc(sizeof(char) * (result_length + 1)); // +1 for null terminator
 	if (!buf) {
 		pthread_mutex_unlock(&self->lock);
-		return -1;
+		return STR_ALLOC;
 	}
 
 	// Copy everything before word1
@@ -697,16 +713,16 @@ int str_swap_word(str *self, const char *old_word, const char *new_word)
 	self->data = buf;
 
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
-int str_to_upper(str *self)
+Str_err_t str_to_upper(str *self)
 {
-	if (self == NULL) {
-		return -1;
+	if (!self) {
+		return STR_NULL;
 	} else if (!self->data) {
-		return -1;
+		return STR_EMPTY;
 	}
 	pthread_mutex_lock(&self->lock);
 
@@ -717,16 +733,16 @@ int str_to_upper(str *self)
 		p++;
 	}
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
-int str_to_lower(str *self)
+Str_err_t str_to_lower(str *self)
 {
 	if (!self)
-		return -1;
+		return STR_NULL;
 	if (!self->data)
-		return -1;
+		return STR_EMPTY;
 	
 	pthread_mutex_lock(&self->lock);
 	char *p = self->data;
@@ -737,16 +753,16 @@ int str_to_lower(str *self)
 	}
 
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 
-int str_to_title_case(str *self)
+Str_err_t str_to_title_case(str *self)
 {
 	if (!self)
-		return -1;
+		return STR_NULL;
 	if (!self->data || !str_length(self->data))
-		return -1;
+		return STR_EMPTY;
 	
 	pthread_mutex_lock(&self->lock);
 
@@ -764,17 +780,17 @@ int str_to_title_case(str *self)
 	}
 
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
-int str_reverse(str *self)
+Str_err_t str_reverse(str *self)
 {
 	if (!self)
-		return -1;
+		return STR_NULL;
 	else if (!self->data)
-		return -1;
+		return STR_NULL;
 	else if (!str_length(self->data))
-		return -1;
+		return STR_EMPTY;
     
 	pthread_mutex_lock(&self->lock);
 	char buf = 0;
@@ -790,7 +806,7 @@ int str_reverse(str *self)
 	}
 
 	pthread_mutex_unlock(&self->lock);
-	return 0;
+	return STR_OK;
 }
 
 bool str_is_empty(str *self)
@@ -808,9 +824,6 @@ bool str_is_empty(str *self)
 
 static char *str_copy(char *dest, const char *source)
 {
-	if (!dest || !source)
-		return NULL;
-
 	char *p = dest;
 	while((*p++ = *source++) != '\0')
 		/* :) */;
@@ -835,14 +848,16 @@ static char *str_concat(char *dest, const char *source)
 }
 
 
-static int str_nconcat(char *dest, const char *src, size_t n)
+static Str_err_t str_nconcat(char *dest, const char *src, size_t n)
 {
-	if (!dest || !src || n < 1)
-		return -1;
+	if (!dest || !src)
+		return STR_NULL;
+	else if ( n < 1)
+		return STR_INVALID;
 	
 	size_t src_size = str_length(src);
 	if (n > src_size)
-		return -1;
+		return STR_INVALID;
 	
 	while (*dest)
 		dest++;
@@ -853,20 +868,22 @@ static int str_nconcat(char *dest, const char *src, size_t n)
 	}
 	*dest = '\0';
 
-	return 0;
+	return STR_OK;
 }
 
-static int str_ncopy(char *dest, const char *src, size_t n)
+static Str_err_t str_ncopy(char *dest, const char *src, size_t n)
 {
-	if (!dest || !src || n < 1)
-		return -1;
+	if (!dest || !src)
+		return STR_NULL;
+	else if (n < 1)
+		return STR_INVALID;
 	
 	while (n) {
 		*dest++ = *src++;
 		n--;
 	}
 	*dest = '\0';
-	return 0;
+	return STR_OK;
 }
 
 
@@ -881,5 +898,89 @@ static size_t str_length(const char *s)
 
 	return length;
 }
+
+int str_check_err (Str_err_t Error, const char *user_message)
+{
+	bool user_message_flag = false;
+	if (user_message != NULL)
+		user_message_flag = true;
+
+	if (Error < 0)
+		fprintf(stderr, "str_err is invalid\n");
+	else if (user_message_flag)
+		fprintf(stderr, "ERR: %s\n", user_message);
+
+	switch (Error)
+	{
+	case STR_OK:
+		break;
+	case STR_NULL:
+		if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_NULL - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_NULL\n");
+		}
+                break;
+            case STR_INVALID:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_INVALID - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_INVALID\n");
+		}
+                break;
+            case STR_NOMEM:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_NOMEM - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_NOMEM\n");
+		}
+                break;
+            case STR_ERRCPY:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_ERRCPY - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_ERRCPY\n");
+		}
+                break;
+            case STR_MAXSIZE:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_MAXSIZE - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_MAXSIZE\n");
+		}
+                break;
+            case STR_ALLOC:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_ALLOC - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_ALLOC\n");
+		}
+                break;
+            case STR_EMPTY:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_EMPTY - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_EMPTY\n");
+		}
+                break;
+            case STR_FAIL:
+                if (user_message_flag) {
+                	fprintf(stderr, "Error: STR_FAIL - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Error: STR_FAIL\n");
+		}
+                break;
+            default:
+                if (user_message_flag) {
+                	fprintf(stderr, "Unknown error - %s\n", user_message);
+		} else {
+			fprintf(stderr, "Unknown error\n");
+		}
+                break;
+        }
+
+	return 0;
+}
+
 
 #endif /* _STRUTIL_H_ */
