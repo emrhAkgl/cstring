@@ -710,7 +710,6 @@ Str_err_t str_swap_word(str *self, const char *old_word, const char *new_word)
 	buf[old_word_pos - self->data] = '\0'; // Null terminate the buffer
 
 	// Copy word2
-	Str_err_t err = NULL;
 	err = str_concat(buf, new_word);
 	if (err != STR_OK) {
 #if STRDEBUGMODE == ON
