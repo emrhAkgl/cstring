@@ -62,6 +62,11 @@
   #define STR_WARN_UNUSED_RESULT 
 #endif
 
+#define OFF 0
+#define ON 1
+
+#define STRDEBUGMODE ON
+
 const static size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
 
 
@@ -71,7 +76,7 @@ typedef struct Str {
 	pthread_mutex_t lock;
 } str;
 
-typedef enum {
+typedef enum Str_err_t{
 	STR_OK = 0,
 	STR_NULL,
 	STR_INVALID,
@@ -351,7 +356,7 @@ Str_err_t str_reverse(str *self);
 bool str_is_empty(str *self);
 
 static char *str_copy(char *dest, const char *source);
-static char *str_concat(char *dest, const char *source);
+static Str_err_t str_concat(char *dest, const char *source);
 static size_t str_length(const char *s);
 static Str_err_t str_nconcat(char *dest, const char *src, size_t n);
 static Str_err_t str_ncopy(char *dest, const char *src, size_t n);
@@ -382,7 +387,7 @@ Str_err_t str_add(str *self, const char *_data)
 	pthread_mutex_lock(&self->lock);
 	size_t size = str_length(_data);
 
-	if (self->data != NULL) {
+	if (self->data) {
 		size += str_length(self->data);
 
 		char *p = (char *)realloc(self->data, (size + 1));
@@ -464,7 +469,7 @@ Str_err_t str_add_input(str *self)
 		self->data = new_data;
 	}
 
-	int concat_res = str_nconcat(self->data, buf, strlen(buf));
+	Str_err_t concat_res = str_nconcat(self->data, buf, strlen(buf));
 	if (concat_res != STR_OK) {
 		char *res = (char *)realloc(self->data, self_data_size + 1);
 		if (res) {
@@ -484,11 +489,9 @@ Str_err_t str_add_input(str *self)
 
 Str_err_t str_pop_back(str *self, char sep)
 {
-	if (self == NULL) {
+	if (!self) {
 		return STR_NULL;
-	} else if (self->data == NULL) {
-		return STR_EMPTY;
-	} else if (str_length(self->data) == 0) {
+	} else if (!self->data || !str_length(self->data)) {
 		return STR_EMPTY;
 	}
 
@@ -583,27 +586,27 @@ char* get_dyn_input(size_t max_str_size)
 {
 	const int CHUNK_SIZE = 10;
 	char* buffer = (char *)malloc(CHUNK_SIZE);
-	if (buffer == NULL) 
+	if (!buffer) 
 		return NULL;
 
 	size_t current_size = CHUNK_SIZE; // Size of available memory.
 	size_t length = 0; // Length of current string
 
+	char *tmp = NULL;
 	int c;
 	while ((c = getchar()) != EOF && c != '\n') {
 		if (length + 1 >= current_size) { // Expand memory
 			current_size += CHUNK_SIZE;			
 
-			char* tmp = (char *)realloc(buffer, current_size);
-			if (tmp == NULL) {
+			tmp = (char *)realloc(buffer, current_size);
+			if (!tmp) {
 				free(buffer);
 				return NULL;
 			}
-
 			buffer = tmp;
 		}
 
-		if (current_size >= (max_str_size - 1)) {
+		if (length >= (max_str_size - 1)) {
 			free(buffer);
 			return NULL;
 		}
@@ -613,17 +616,13 @@ char* get_dyn_input(size_t max_str_size)
 	}
 
 	// Finally release the extra memory
-	char *result = (char *)malloc((length + 1) * sizeof(char));
-	if (!result) {
+	tmp = (char *)realloc(buffer, length + 1);
+	if (!tmp) {
 		free(buffer);
 		return NULL;
 	}
-	
-	str_ncopy(result, buffer, str_length(buffer));
-	result[str_length(buffer)] = '\0';
-
-	free(buffer);
-	return result;
+	buffer = tmp;
+	return buffer;
 }
 
 
@@ -674,7 +673,7 @@ Str_err_t str_swap_word(str *self, const char *old_word, const char *new_word)
 {
 	if (!self || !old_word || !new_word)
 		return STR_NULL;
-	else if (!self->data )
+	else if (!self->data)
 		return STR_EMPTY;
 
 	pthread_mutex_lock(&self->lock);
@@ -700,14 +699,36 @@ Str_err_t str_swap_word(str *self, const char *old_word, const char *new_word)
 	}
 
 	// Copy everything before word1
-	str_ncopy(buf, self->data, old_word_pos - self->data);
+	Str_err_t err =  str_ncopy(buf, self->data, old_word_pos - self->data);
+	if (err != STR_OK) {
+#if STRDEBUGMODE == ON
+		str_check_err(err, "str_swap_word --> Str_err_t err =  str_ncopy(buf, self->data, old_word_pos - self->data)");
+#endif
+		free(buf);
+		return err;
+	}
 	buf[old_word_pos - self->data] = '\0'; // Null terminate the buffer
 
 	// Copy word2
-	str_concat(buf, new_word);
+	Str_err_t err = NULL;
+	err = str_concat(buf, new_word);
+	if (err != STR_OK) {
+#if STRDEBUGMODE == ON
+		str_check_err(err, "str_swap_word --> Str_err_t err = str_concat(buf, new_word)");
+#endif
+		free(buf);
+		return err;
+	}
 
 	// Copy everything after word1
-	str_concat(buf, old_word_pos + old_word_size);
+	err = str_concat(buf, old_word_pos + old_word_size);
+	if (err != STR_OK) {
+#if STRDEBUGMODE == ON
+		str_check_err(err, "str_swap_word --> Str_err_t err = str_concat(buf, old_word_pos + old_word_size)");
+#endif
+		free(buf);
+		return err;
+	}
 
 	free(self->data);
 	self->data = buf;
@@ -832,10 +853,10 @@ static char *str_copy(char *dest, const char *source)
 }
 
 
-static char *str_concat(char *dest, const char *source)
+static Str_err_t str_concat(char *dest, const char *source)
 {
 	if (!dest || !source)
-		return NULL;
+		return STR_NULL;
 
 	char *p = dest;
 	while (*p)
@@ -844,7 +865,7 @@ static char *str_concat(char *dest, const char *source)
 	while ((*p = *source++) != '\0')
 		p++;
 	
-	return dest;
+	return STR_OK;
 }
 
 
@@ -902,7 +923,7 @@ static size_t str_length(const char *s)
 int str_check_err (Str_err_t Error, const char *user_message)
 {
 	bool user_message_flag = false;
-	if (user_message != NULL)
+	if (user_message)
 		user_message_flag = true;
 
 	if (Error < 0)
