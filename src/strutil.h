@@ -64,7 +64,6 @@
 
 #define OFF 0
 #define ON 1
-
 #define STRDEBUGMODE ON
 
 const static size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
