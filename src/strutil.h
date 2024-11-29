@@ -14,6 +14,8 @@
  *
  * The functions provided in this header file include:
  * - `str_init()`: Initialize a new `Str` structure.
+ * - `str_set()`: Set first value
+ * - `str_get()`: Get string value
  * - `str_add()`: Append a string to the existing data.
  * - `str_input()`: Read a string from standard input.
  * - `str_add_input()`: Append input from standard input to existing data.
@@ -64,6 +66,7 @@
 
 #define OFF 0
 #define ON 1
+
 #define STRDEBUGMODE ON
 
 const static size_t MAX_STRING_SIZE  = ((SIZE_MAX / 100) * 95);
@@ -354,6 +357,9 @@ Str_err_t str_reverse(str *self);
  */
 bool str_is_empty(str *self);
 
+Str_err_t str_set(str *self, const char *arr);
+const char *str_get(const str *self);
+
 static char *str_copy(char *dest, const char *source);
 static Str_err_t str_concat(char *dest, const char *source);
 static size_t str_length(const char *s);
@@ -375,6 +381,41 @@ str *str_init(void)
 	tmp->is_dynamic = 1;
 	pthread_mutex_init(&tmp->lock, NULL);
 	return tmp;
+}
+
+Str_err_t str_set(str *self, const char *arr)
+{
+	if (!self )
+		return STR_NULL;
+	else if (self->data)
+		return STR_INVALID; // str->data must be empty
+	
+	pthread_mutex_lock(&self->lock);
+
+	size_t arr_size = str_length(arr);
+	if (arr_size == 0) {
+		pthread_mutex_unlock(&self->lock);
+		return STR_INVALID;
+	}
+	
+	self->data = (char *)malloc(sizeof(arr_size));
+	if (!self->data) {
+		pthread_mutex_unlock(&self->lock);
+		return STR_ALLOC;
+	}
+
+	str_copy(self->data, arr);
+	pthread_mutex_unlock(&self->lock);
+	return STR_OK;
+}
+
+const char *str_get(const str *self)
+{
+	if (!self)
+		return NULL;
+	if (!self->data)
+		return NULL;
+	return (const char *)self->data;
 }
 
 
